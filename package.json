@@ -1,0 +1,47 @@
+{
+  "name": "simple",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run build --watch",
+    "build": "bun build index.ts --target=browser --outfile=dist/index.js --minify",
+    "serve": "bun run --hot serve.ts",
+    "fmt": "prettier --write . --cache",
+    "fmt:check": "prettier --check . --cache",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "cleani": "rm -rf dist node_modules && bun i",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "@eslint/js": "^9.16.0",
+    "@types/bun": "latest",
+    "@types/eslint": "^9.6.1",
+    "eslint": "^9.16.0",
+    "globals": "^15.13.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.4.1",
+    "typescript-eslint": "^8.17.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "prettier": {},
+  "lint-staged": {
+    "*.{ts,tsx,md,mdx}": [
+      "prettier --write --cache"
+    ],
+    "*.{ts,tsx,mdx}": [
+      "eslint --fix ."
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  }
+}
