@@ -1,22 +1,14 @@
 import { PAY_WITH_SIMPLE_SVG } from "./constants";
+import { removeEmptyValues } from "./utils";
 
-type SimpleAccountConfig = {
-  platformId: string;
-  organizationId: string;
-  amount: string;
-};
+let simpleConfig: SimpleConfig;
 
-let simpleAccountConfig: SimpleAccountConfig;
-
-/**
- * Global function to set up account configuration.
- * @param {string} platformId - The platform ID for the client.
- * @param {string} organizationId - The organization ID for the client.
- */
-window.setupSimpleAccount = function (
-  platformId: string,
-  organizationId: string,
-) {
+window.setupSimple = function ({
+  platformId,
+  organizationId,
+  amount,
+  schedule,
+}) {
   if (!platformId || typeof platformId !== "string") {
     console.error(
       "setupSimpleAccount: Invalid platformId. Please provide a valid string.",
@@ -31,10 +23,32 @@ window.setupSimpleAccount = function (
     return;
   }
 
-  simpleAccountConfig = { platformId, organizationId, amount: "1" };
+  if (!amount || typeof amount !== "string") {
+    console.error(
+      "setupSimpleAccount: Invalid amount. Please provide a valid string.",
+    );
+    return;
+  }
+
+  if (
+    schedule &&
+    (!schedule.intervalType ||
+      !schedule.intervalCount ||
+      !schedule.totalPayments ||
+      !schedule.startDate ||
+      !schedule.endDate)
+  ) {
+    console.error(
+      "setupSimpleAccount: Invalid schedule. Please provide a valid schedule.",
+    );
+    return;
+  }
+
+  simpleConfig = { platformId, organizationId, amount, schedule };
+
   console.info(
     "setupSimpleAccount: Configuration successfully set.",
-    simpleAccountConfig,
+    simpleConfig,
   );
 };
 
@@ -42,7 +56,7 @@ export function initializeSDK() {
   console.info("initializeSDK");
 
   const emailInputs = document.querySelectorAll(
-    "input[type='email']",
+    "input[data-simple]",
   ) as NodeListOf<HTMLInputElement>;
 
   emailInputs.forEach((input) => {
@@ -78,8 +92,15 @@ export function initializeSDK() {
       const left = (window.screen.width - width) / 2 + window.screenLeft;
       const top = (window.screen.height - height) / 2;
 
+      const params = {
+        platformId: simpleConfig.platformId,
+        organizationId: simpleConfig.organizationId,
+        amount: simpleConfig.amount,
+        ...simpleConfig.schedule,
+      };
+
       window.open(
-        `/payment?${new URLSearchParams(simpleAccountConfig).toString()}`,
+        `/payment?${new URLSearchParams(removeEmptyValues(params)).toString()}`,
         "PopupWindow",
         `width=${width},height=${height},left=${left},top=${top}`,
       );
