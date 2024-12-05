@@ -3,12 +3,11 @@ import { removeEmptyValues } from "./utils";
 
 let simpleConfig: SimpleConfig;
 
-window.setupSimple = function ({
-  platformId,
-  organizationId,
-  amount,
-  schedule,
-}) {
+window.setupSimple = function (
+  { platformId, organizationId, amount, schedule },
+  onTxnSuccess,
+  onTxnError,
+) {
   if (!platformId || typeof platformId !== "string") {
     console.error(
       "setupSimpleAccount: Invalid platformId. Please provide a valid string.",
@@ -30,14 +29,7 @@ window.setupSimple = function ({
     return;
   }
 
-  if (
-    schedule &&
-    (!schedule.intervalType ||
-      !schedule.intervalCount ||
-      !schedule.totalPayments ||
-      !schedule.startDate ||
-      !schedule.endDate)
-  ) {
+  if (schedule && (!schedule.intervalType || !schedule.intervalCount)) {
     console.error(
       "setupSimpleAccount: Invalid schedule. Please provide a valid schedule.",
     );
@@ -50,6 +42,21 @@ window.setupSimple = function ({
     "setupSimpleAccount: Configuration successfully set.",
     simpleConfig,
   );
+
+  function handleMessage(event: MessageEvent) {
+    if (event.origin !== window.location.origin) {
+      console.warn("Origin mismatch:", event.origin);
+      return;
+    }
+
+    if (event.data.type === "success") {
+      onTxnSuccess(event.data);
+    } else if (event.data.type === "error") {
+      onTxnError(event.data);
+    }
+  }
+
+  window.addEventListener("message", handleMessage);
 };
 
 export function initializeSDK() {
@@ -83,6 +90,8 @@ export function initializeSDK() {
     icon.title = "Pay with Simple";
 
     wrapper.appendChild(icon);
+    console.log("Simple icon added");
+
     input.dataset.simpleIconAdded = "true";
 
     icon.addEventListener("click", () => {

@@ -6,7 +6,9 @@ const server = Bun.serve({
   //   }),
   // },
   async fetch() {
-    return new Response(await Bun.file("./dist/index.js").text());
+    return new Response(await Bun.file("./dist/index.js").bytes(), {
+      headers: { "Content-Type": "text/javascript" },
+    });
   },
 });
 

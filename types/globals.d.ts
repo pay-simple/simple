@@ -15,7 +15,11 @@ declare global {
   };
 
   interface Window {
-    setupSimple: (args: SimpleConfig) => void;
+    setupSimple: (
+      args: SimpleConfig,
+      onTxnSuccess: (txn: unknown) => void,
+      onTxnError: (error: unknown) => void,
+    ) => void;
   }
 }
 
