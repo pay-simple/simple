@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Payment Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="http://localhost:8000"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-6">
+    <div class="w-full max-w-xl bg-white rounded-2xl shadow-lg p-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Payment Form</h1>
+            <p class="text-gray-600 mt-2">Complete the form below to process your payment</p>
+        </div>
+
+        <!-- Configuration Section -->
+        <div class="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Configuration</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label for="platformId" class="block text-sm font-medium text-gray-700 mb-2">
+                        Platform ID <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           id="platformId" 
+                           class="block w-full py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Enter platform ID"
+                           required>
+                </div>
+                <div>
+                    <label for="organizationId" class="block text-sm font-medium text-gray-700 mb-2">
+                        Organization ID <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" 
+                           id="organizationId"
+                           class="block w-full py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Enter organization ID"
+                           required>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form class="space-y-6" id="paymentForm">
+            <!-- Amount Field -->
+            <div>
+                <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">
+                    Amount <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                    <input type="number" 
+                           id="amount" 
+                           class="block w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="0.00"
+                           step="0.01"
+                           required>
+                </div>
+            </div>
+
+            <!-- Recurring Payment Toggle -->
+            <div class="flex items-center space-x-2">
+                <input type="checkbox" 
+                       id="enableRecurring" 
+                       class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
+                <label for="enableRecurring" class="text-sm font-medium text-gray-700">Enable Recurring Payments</label>
+            </div>
+
+            <!-- Recurring Payment Options (Hidden by default) -->
+            <div id="recurringOptions" class="space-y-4 hidden">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="intervalType" class="block text-sm font-medium text-gray-700 mb-2">Frequency <span class="text-red-500">*</span></label>
+                        <select id="intervalType" 
+                                class="block w-full py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select frequency</option>
+                            <option value="day">Daily</option>
+                            <option value="week">Weekly</option>
+                            <option value="month">Monthly</option>
+                            <option value="year">Yearly</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="intervalCount" class="block text-sm font-medium text-gray-700 mb-2">Count <span class="text-red-500">*</span></label>
+                        <input type="number" 
+                               id="intervalCount"
+                               class="block w-full py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               placeholder="How many times?"
+                               min="1">
+                    </div>
+                </div>
+
+                <!-- Optional Fields -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="startDate" class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                        <input type="date" 
+                               id="startDate"
+                               class="block w-full py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="endDate" class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                        <input type="date" 
+                               id="endDate"
+                               class="block w-full py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+                <div>
+                    <label for="totalPayments" class="block text-sm font-medium text-gray-700 mb-2">Total Payments</label>
+                    <input type="number" 
+                           id="totalPayments"
+                           class="block w-full py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Total number of payments"
+                           min="1">
+                </div>
+            </div>
+
+            <!-- Email Field -->
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                    Email <span class="text-red-500">*</span>
+                </label>
+                <input type="email" 
+                       id="email"
+                       data-simple="true"
+                       class="block w-full py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="your@email.com"
+                       required>
+            </div>
+        </form>
+
+        <!-- Response Section -->
+        <div class="mt-8">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Response</h2>
+            <pre id="response" class="bg-gray-100 rounded-lg p-4 overflow-x-auto text-sm text-gray-800">
+{
+    "status": "waiting for transaction"
+}
+            </pre>
+        </div>
+    </div>
+
+    <script>
+        // Get all the elements
+        const enableRecurring = document.getElementById('enableRecurring');
+        const recurringOptions = document.getElementById('recurringOptions');
+        const intervalType = document.getElementById('intervalType');
+        const intervalCount = document.getElementById('intervalCount');
+        const form = document.getElementById('paymentForm');
+        const amountInput = document.getElementById('amount');
+        const platformIdInput = document.getElementById('platformId');
+        const organizationIdInput = document.getElementById('organizationId');
+
+        // Load saved configuration from localStorage
+        platformIdInput.value = localStorage.simplePlatformId;
+        organizationIdInput.value = localStorage.simpleOrganizationId;
+
+        // Save configuration to localStorage
+        platformIdInput.addEventListener('change', () => {
+            localStorage.simplePlatformId = platformIdInput.value;
+        });
+        organizationIdInput.addEventListener('change', () => {
+            localStorage.simpleOrganizationId = organizationIdInput.value;
+        });
+
+
+        // Toggle recurring payment options
+        enableRecurring.addEventListener('change', function() {
+            recurringOptions.classList.toggle('hidden');
+        });
+
+        // Initialize Simple SDK with form data
+        function updateSimpleConfig() {
+            const config = {
+                platformId: platformIdInput.value,
+                organizationId: organizationIdInput.value,
+                amount: amountInput.value || "10.00"
+            };
+
+            if (enableRecurring.checked) {
+                config.schedule = {
+                    intervalType: intervalType.value,
+                    intervalCount: parseInt(intervalCount.value),
+                    startDate: document.getElementById('startDate').value || undefined,
+                    endDate: document.getElementById('endDate').value || undefined,
+                    totalPayments: document.getElementById('totalPayments').value ? 
+                        parseInt(document.getElementById('totalPayments').value) : undefined
+                };
+            }
+
+            window.setupSimple(config, 
+                (txn) => {
+                    document.getElementById('response').textContent = JSON.stringify(txn, null, 2);
+                },
+                (error) => {
+                    document.getElementById('response').textContent = JSON.stringify(error, null, 2);
+                }
+            );
+        }
+
+        // Update config when form values change
+        form.addEventListener('change', updateSimpleConfig);
+        platformIdInput.addEventListener('change', updateSimpleConfig);
+        organizationIdInput.addEventListener('change', updateSimpleConfig);
+        
+        // Initial setup
+        updateSimpleConfig();
+    </script>
+</body>
+</html>
