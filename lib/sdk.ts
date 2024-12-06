@@ -63,7 +63,7 @@ export function initializeSDK() {
   console.info("initializeSDK");
 
   const emailInputs = document.querySelectorAll(
-    "input[data-simple]",
+    ".simple-input input, input.simple-input",
   ) as NodeListOf<HTMLInputElement>;
 
   emailInputs.forEach((input) => {
@@ -109,7 +109,7 @@ export function initializeSDK() {
       };
 
       window.open(
-        `/payment?${new URLSearchParams(removeEmptyValues(params)).toString()}`,
+        `https://simple.arnbr.com/payment?${new URLSearchParams(removeEmptyValues(params)).toString()}`,
         "PopupWindow",
         `width=${width},height=${height},left=${left},top=${top}`,
       );
