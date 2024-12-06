@@ -1,21 +1,12 @@
 import { PAY_WITH_SIMPLE_SVG } from "./constants";
+import { removeEmptyValues } from "./utils";
 
-type SimpleAccountConfig = {
-  platformId: string;
-  organizationId: string;
-  amount: string;
-};
+let simpleConfig: SimpleConfig;
 
-let simpleAccountConfig: SimpleAccountConfig;
-
-/**
- * Global function to set up account configuration.
- * @param {string} platformId - The platform ID for the client.
- * @param {string} organizationId - The organization ID for the client.
- */
-window.setupSimpleAccount = function (
-  platformId: string,
-  organizationId: string,
+window.setupSimple = function (
+  { platformId, organizationId, amount, schedule },
+  onTxnSuccess,
+  onTxnError,
 ) {
   if (!platformId || typeof platformId !== "string") {
     console.error(
@@ -31,18 +22,48 @@ window.setupSimpleAccount = function (
     return;
   }
 
-  simpleAccountConfig = { platformId, organizationId, amount: "1" };
+  if (!amount || typeof amount !== "string") {
+    console.error(
+      "setupSimpleAccount: Invalid amount. Please provide a valid string.",
+    );
+    return;
+  }
+
+  if (schedule && (!schedule.intervalType || !schedule.intervalCount)) {
+    console.error(
+      "setupSimpleAccount: Invalid schedule. Please provide a valid schedule.",
+    );
+    return;
+  }
+
+  simpleConfig = { platformId, organizationId, amount, schedule };
+
   console.info(
     "setupSimpleAccount: Configuration successfully set.",
-    simpleAccountConfig,
+    simpleConfig,
   );
+
+  function handleMessage(event: MessageEvent) {
+    if (event.origin !== window.location.origin) {
+      console.warn("Origin mismatch:", event.origin);
+      return;
+    }
+
+    if (event.data.type === "success") {
+      onTxnSuccess(event.data);
+    } else if (event.data.type === "error") {
+      onTxnError(event.data);
+    }
+  }
+
+  window.addEventListener("message", handleMessage);
 };
 
 export function initializeSDK() {
   console.info("initializeSDK");
 
   const emailInputs = document.querySelectorAll(
-    "input[type='email']",
+    ".simple-input input, input.simple-input",
   ) as NodeListOf<HTMLInputElement>;
 
   emailInputs.forEach((input) => {
@@ -69,6 +90,8 @@ export function initializeSDK() {
     icon.title = "Pay with Simple";
 
     wrapper.appendChild(icon);
+    console.log("Simple icon added");
+
     input.dataset.simpleIconAdded = "true";
 
     icon.addEventListener("click", () => {
@@ -78,8 +101,15 @@ export function initializeSDK() {
       const left = (window.screen.width - width) / 2 + window.screenLeft;
       const top = (window.screen.height - height) / 2;
 
+      const params = {
+        platformId: simpleConfig.platformId,
+        organizationId: simpleConfig.organizationId,
+        amount: simpleConfig.amount,
+        ...simpleConfig.schedule,
+      };
+
       window.open(
-        `/payment?${new URLSearchParams(simpleAccountConfig).toString()}`,
+        `https://simple.arnbr.com/payment?${new URLSearchParams(removeEmptyValues(params)).toString()}`,
         "PopupWindow",
         `width=${width},height=${height},left=${left},top=${top}`,
       );
