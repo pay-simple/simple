@@ -16,7 +16,7 @@ const server = Bun.serve({
     }
 
     // Read the HTML file
-    const html = await Bun.file("./exemple/index.html").text();
+    const html = await Bun.file("./example/index.html").text();
 
     // Replace the jsDelivr CDN link with the local development version
     const modifiedHtml = html.replace(
