@@ -3,7 +3,7 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun run build --watch",
+    "dev": "concurrently \"bun run build --watch\" \"bun run serve\"",
     "build": "bun build index.ts --target=browser --outfile=dist/index.js --minify",
     "serve": "bun run --hot serve.ts",
     "fmt": "prettier --write . --cache",
@@ -20,15 +20,13 @@
     "@eslint/js": "^9.16.0",
     "@types/bun": "latest",
     "@types/eslint": "^9.6.1",
+    "concurrently": "^9.1.0",
     "eslint": "^9.16.0",
     "globals": "^15.13.0",
     "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
     "prettier": "^3.4.1",
     "typescript-eslint": "^8.17.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
   },
   "prettier": {},
   "lint-staged": {
