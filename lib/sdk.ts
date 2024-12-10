@@ -1,5 +1,5 @@
 import { PAY_WITH_SIMPLE_SVG } from "./constants";
-import { removeEmptyValues } from "./utils";
+import { getBaseUrl, removeEmptyValues } from "./utils";
 
 let simpleConfig: SimpleConfig;
 
@@ -109,7 +109,9 @@ export function initializeSDK() {
       };
 
       window.open(
-        `https://simple.arnbr.com/payment?${new URLSearchParams(removeEmptyValues(params)).toString()}`,
+        `${getBaseUrl()}/payment?${new URLSearchParams(
+          removeEmptyValues(params),
+        ).toString()}`,
         "PopupWindow",
         `width=${width},height=${height},left=${left},top=${top}`,
       );

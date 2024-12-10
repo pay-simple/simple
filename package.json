@@ -3,10 +3,9 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"bun run watch\" \"bun run serve\"",
+    "dev": "concurrently \"bun run build --watch\" \"bun run serve\"",
     "build": "bun build index.ts --target=browser --outfile=dist/index.js --minify",
-    "serve": "bun run serve.ts",
-    "watch": "bun build ./index.ts --outdir ./dist --watch",
+    "serve": "bun run --hot serve.ts",
     "fmt": "prettier --write . --cache",
     "fmt:check": "prettier --check . --cache",
     "lint": "eslint .",
@@ -28,9 +27,6 @@
     "lint-staged": "^15.2.10",
     "prettier": "^3.4.1",
     "typescript-eslint": "^8.17.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
   },
   "prettier": {},
   "lint-staged": {

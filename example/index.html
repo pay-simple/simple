@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Payment Form</title>
+    <script src="https://cdn.jsdelivr.net/gh/pay-simple/simple@1.1/dist/index.min.js"></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <h1>Payment Form</h1>
+        <p>Complete the form below to process your payment</p>
+      </div>
+
+      <!-- Configuration Section -->
+      <div class="configuration">
+        <h2>Configuration</h2>
+
+        <div class="form-field">
+          <div>
+            <label for="platformId">
+              Platform ID<span class="required">*</span>
+            </label>
+
+            <input
+              type="text"
+              id="platformId"
+              placeholder="Enter platform ID"
+              required
+            />
+          </div>
+
+          <div>
+            <label for="organizationId">
+              Organization ID<span class="required">*</span>
+            </label>
+
+            <input
+              type="text"
+              id="organizationId"
+              placeholder="Enter organization ID"
+              required
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <form id="paymentForm">
+        <!-- Amount Field -->
+        <div class="amount-field">
+          <label for="amount"> Amount<span class="required">*</span> </label>
+          <div>
+            <span>$</span>
+            <input
+              required
+              id="amount"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+
+        <!-- Recurring Payment Toggle -->
+        <div class="recurring-payment-toggle">
+          <input type="checkbox" id="enableRecurring" />
+          <label for="enableRecurring">Enable Recurring Payments</label>
+        </div>
+
+        <!-- Recurring Payment Options (Hidden by default) -->
+        <div id="recurringOptions" class="recurring-payment-options">
+          <div class="form-field">
+            <div>
+              <label for="intervalType">
+                Frequency <span class="required">*</span></label
+              >
+              <select id="intervalType">
+                <option value="">Select frequency</option>
+                <option value="day">Daily</option>
+                <option value="week">Weekly</option>
+                <option value="month">Monthly</option>
+                <option value="year">Yearly</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="intervalCount">
+                Count <span class="required">*</span>
+              </label>
+              <input
+                id="intervalCount"
+                type="number"
+                min="1"
+                placeholder="How many times?"
+              />
+            </div>
+          </div>
+
+          <!-- Optional Fields -->
+          <div class="form-field">
+            <div>
+              <label for="startDate"> Start Date</label>
+              <input type="date" id="startDate" />
+            </div>
+
+            <div>
+              <label for="endDate">End Date</label>
+              <input type="date" id="endDate" />
+            </div>
+          </div>
+
+          <div class="form-item">
+            <label for="totalPayments"> Total Payments</label>
+            <input
+              type="number"
+              id="totalPayments"
+              placeholder="Total number of payments"
+              min="1"
+            />
+          </div>
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-item">
+          <label for="email"> Email<span class="required">*</span> </label>
+
+          <input
+            id="email"
+            type="email"
+            required
+            placeholder="your@email.com"
+          />
+        </div>
+      </form>
+
+      <!-- Response Section -->
+      <div class="response">
+        <h2>Response</h2>
+        <div>
+          <pre id="response">
+{ "status": "waiting for transaction" }
+        </pre
+          >
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Get all the elements
+      const enableRecurring = document.getElementById("enableRecurring");
+      const recurringOptions = document.getElementById("recurringOptions");
+      const intervalType = document.getElementById("intervalType");
+      const intervalCount = document.getElementById("intervalCount");
+      const form = document.getElementById("paymentForm");
+      const amountInput = document.getElementById("amount");
+      const platformIdInput = document.getElementById("platformId");
+      const organizationIdInput = document.getElementById("organizationId");
+
+      // Load saved configuration from localStorage
+      platformIdInput.value = localStorage.simplePlatformId || "";
+      organizationIdInput.value = localStorage.simpleOrganizationId || "";
+
+      // Save configuration to localStorage
+      platformIdInput.addEventListener("change", () => {
+        localStorage.simplePlatformId = platformIdInput.value;
+      });
+      organizationIdInput.addEventListener("change", () => {
+        localStorage.simpleOrganizationId = organizationIdInput.value;
+      });
+
+      // Toggle recurring payment options
+      enableRecurring.addEventListener("change", () => {
+        if (enableRecurring.checked) {
+          recurringOptions.style.display = "flex";
+        } else {
+          recurringOptions.style.display = "none";
+        }
+      });
+
+      // Initialize Simple SDK with form data
+      function updateSimpleConfig() {
+        const config = {
+          platformId: platformIdInput.value,
+          organizationId: organizationIdInput.value,
+          amount: amountInput.value || "10.00",
+        };
+
+        if (enableRecurring.checked) {
+          config.schedule = {
+            intervalType: intervalType.value,
+            intervalCount: parseInt(intervalCount.value),
+            startDate: document.getElementById("startDate").value || undefined,
+            endDate: document.getElementById("endDate").value || undefined,
+            totalPayments: document.getElementById("totalPayments").value
+              ? parseInt(document.getElementById("totalPayments").value)
+              : undefined,
+          };
+        }
+
+        window.setupSimple(
+          config,
+          (txn) => {
+            document.getElementById("response").textContent = JSON.stringify(
+              txn,
+              null,
+              2,
+            );
+          },
+          (error) => {
+            document.getElementById("response").textContent = JSON.stringify(
+              error,
+              null,
+              2,
+            );
+          },
+        );
+      }
+
+      // Update config when form values change
+      form.addEventListener("change", updateSimpleConfig);
+      platformIdInput.addEventListener("change", updateSimpleConfig);
+      organizationIdInput.addEventListener("change", updateSimpleConfig);
+
+      // Initial setup
+      updateSimpleConfig();
+    </script>
+  </body>
+
+  <style>
+    *,
+    ::before,
+    ::after {
+      box-sizing: border-box;
+      border-width: 0;
+      border-style: solid;
+      border-color: #e5e7eb;
+    }
+    ::before,
+    ::after {
+      --tw-content: "";
+    }
+
+    html,
+    :host {
+      line-height: 1.5;
+      -webkit-text-size-adjust: 100%;
+      -moz-tab-size: 4;
+      tab-size: 4;
+      font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+        "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      font-feature-settings: normal;
+      font-variation-settings: normal;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      line-height: inherit;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-size: inherit;
+      font-weight: inherit;
+    }
+
+    blockquote,
+    dl,
+    dd,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    hr,
+    figure,
+    p,
+    pre {
+      margin: 0;
+    }
+
+    .focus\:ring-2:focus {
+      --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0
+        var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+      --tw-ring-shadow: var(--tw-ring-inset) 0 0 0
+        calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+      box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+        var(--tw-shadow, 0 0 #0000);
+    }
+    .focus\:ring-green-400:focus {
+      --tw-ring-opacity: 1;
+      --tw-ring-color: rgb(74 222 128 / var(--tw-ring-opacity, 1));
+    }
+    .focus\:ring-offset-2:focus {
+      --tw-ring-offset-width: 2px;
+    }
+    .focus\:ring-offset-white:focus {
+      --tw-ring-offset-color: #fff;
+    }
+    @media (min-width: 768px) {
+      .md\:p-6 {
+        padding: 1.5rem;
+      }
+
+      .container {
+        padding: 1.5rem;
+      }
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 42rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .header {
+      display: flex;
+      flex-direction: column;
+      gap: -0.125rem;
+    }
+
+    .header h1 {
+      font-size: 1.875rem;
+      line-height: 2.25rem;
+      font-weight: 700;
+      color: #171717;
+    }
+
+    .header p {
+      font-weight: 400;
+      color: #737373;
+    }
+
+    .configuration {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      background-color: #f4f4f5;
+      border: 1px solid #e4e4e7;
+    }
+
+    .configuration h2 {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+      font-weight: 600;
+      color: #171717;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .form-field {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .form-field > div,
+    .form-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    label {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      font-weight: 500;
+      color: #404040;
+    }
+
+    input,
+    select {
+      border: 1px solid #e4e4e7;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      font-weight: 400;
+      color: #171717;
+      outline: none;
+      transition: border-color 0.2s ease-in-out;
+      width: 100%;
+    }
+
+    .amount-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .amount-field > div {
+      position: relative;
+    }
+
+    .amount-field > div > span {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #a3a3a3;
+    }
+
+    .amount-field > div > input {
+      padding-left: 2rem;
+    }
+
+    .recurring-payment-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .recurring-payment-toggle > input {
+      width: 0.875rem;
+      height: 0.875rem;
+      border-radius: 0.25rem;
+      border: 1px solid #e4e4e7;
+    }
+
+    .recurring-payment-options {
+      display: none;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .required {
+      color: #ef4444;
+    }
+
+    .response {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .response h2 {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+      font-weight: 600;
+      color: #171717;
+    }
+
+    .response div {
+      background-color: #f4f4f5;
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      overflow-x: auto;
+      text-wrap: pretty;
+      min-height: 11rem;
+    }
+
+    .response pre {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      font-weight: 400;
+      color: #171717;
+      padding: 1rem;
+    }
+  </style>
+</html>

@@ -16,7 +16,7 @@ const server = Bun.serve({
     }
 
     // Read the HTML file
-    const html = await Bun.file("./exemple/intex.html").text();
+    const html = await Bun.file("./exemple/index.html").text();
 
     // Replace the jsDelivr CDN link with the local development version
     const modifiedHtml = html.replace(
@@ -24,11 +24,27 @@ const server = Bun.serve({
       "http://localhost:8000/sdk",
     );
 
-    // Add hot reload script
+    // Add improved hot reload script with reconnection logic
     const hotReloadScript = `
       <script>
-        const ws = new WebSocket('ws://localhost:8000');
-        ws.onmessage = () => location.reload();
+        function connectWebSocket() {
+          const ws = new WebSocket('ws://localhost:8000');
+          
+          ws.onmessage = () => {
+            console.log('Reloading due to file change...');
+            location.reload();
+          };
+
+          ws.onclose = () => {
+            console.log('WebSocket disconnected. Reconnecting...');
+            setTimeout(connectWebSocket, 1000);
+          };
+
+          ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+          };
+        }
+        connectWebSocket();
       </script>
     `;
     const finalHtml = modifiedHtml.replace(
@@ -59,13 +75,15 @@ const server = Bun.serve({
   },
 });
 
-// Watch for file changes
-const watcher = watch("./dist");
-watcher.on("change", () => {
-  // Notify all clients to reload
+const watcher = watch("./example", { recursive: true });
+
+watcher.on("change", (_, filename) => handleFileChange(`example/${filename}`));
+
+function handleFileChange(path: string) {
+  console.log(`File changed: ${path}`);
   for (const client of clients) {
     client.send("reload");
   }
-});
+}
 
 console.info(`Listening on ${server.url}`);
