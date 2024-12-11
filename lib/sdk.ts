@@ -1,42 +1,18 @@
 import { PAY_WITH_SIMPLE_SVG } from "./constants";
 import { getBaseUrl, removeEmptyValues } from "./utils";
+import { validateConfig } from "./validator";
 
 let simpleConfig: SimpleConfig;
 
-window.setupSimple = function (
-  { platformId, organizationId, amount, schedule },
-  onTxnSuccess,
-  onTxnError,
-) {
-  if (!platformId || typeof platformId !== "string") {
-    console.error(
-      "setupSimpleAccount: Invalid platformId. Please provide a valid string.",
-    );
-    return;
+window.setupSimple = function (config, onTxnSuccess, onTxnError) {
+  const validationError = validateConfig(config);
+
+  if (validationError) {
+    console.error("setupSimpleAccount:", validationError);
+    throw new Error(validationError);
   }
 
-  if (!organizationId || typeof organizationId !== "string") {
-    console.error(
-      "setupSimpleAccount: Invalid organizationId. Please provide a valid string.",
-    );
-    return;
-  }
-
-  if (!amount || typeof amount !== "string") {
-    console.error(
-      "setupSimpleAccount: Invalid amount. Please provide a valid string.",
-    );
-    return;
-  }
-
-  if (schedule && (!schedule.intervalType || !schedule.intervalCount)) {
-    console.error(
-      "setupSimpleAccount: Invalid schedule. Please provide a valid schedule.",
-    );
-    return;
-  }
-
-  simpleConfig = { platformId, organizationId, amount, schedule };
+  simpleConfig = { ...simpleConfig, ...config };
 
   console.info(
     "setupSimpleAccount: Configuration successfully set.",
@@ -86,6 +62,9 @@ export function initializeSDK() {
     icon.style.right = "10px";
     icon.style.top = "50%";
     icon.style.transform = "translateY(-50%)";
+    icon.style.display = "flex";
+    icon.style.alignItems = "center";
+    icon.style.justifyContent = "center";
     icon.style.cursor = "pointer";
     icon.title = "Pay with Simple";
 

@@ -1,3 +1,6 @@
+export const SIMPLE_OBJECT_ID_REGEX = /^[\da-fA-F]{24}$/;
+export const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
 export const PAY_WITH_SIMPLE_SVG = `<svg
     width="88"
     height="24"
