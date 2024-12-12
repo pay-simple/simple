@@ -15,5 +15,7 @@ export function isProduction() {
 }
 
 export function getBaseUrl() {
-  return isProduction() ? "https://simple.arnbr.com" : "http://localhost:8000";
+  return isProduction()
+    ? "https://app.paysimple.io"
+    : "https://test.paysimple.io";
 }
