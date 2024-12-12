@@ -2,50 +2,62 @@ import { PAY_WITH_SIMPLE_SVG } from "./constants";
 import { getBaseUrl, removeEmptyValues } from "./utils";
 import { validateConfig } from "./validator";
 
-let simpleConfig: SimpleConfig;
+let simpleConfig: Partial<SimpleConfig> = {};
 
-window.setupSimple = function (config, onTxnSuccess, onTxnError) {
-  const validationError = validateConfig(config);
-
-  if (validationError) {
-    console.error("setupSimpleAccount:", validationError);
-    throw new Error(validationError);
+window.addEventListener("message", (event: MessageEvent) => {
+  if (event.origin !== window.location.origin) {
+    console.warn("Origin mismatch:", event.origin);
+    return;
   }
 
-  simpleConfig = { ...simpleConfig, ...config };
-
-  console.info(
-    "setupSimpleAccount: Configuration successfully set.",
-    simpleConfig,
-  );
-
-  function handleMessage(event: MessageEvent) {
-    if (event.origin !== window.location.origin) {
-      console.warn("Origin mismatch:", event.origin);
-      return;
-    }
-
-    if (event.data.type === "success") {
-      onTxnSuccess(event.data);
-    } else if (event.data.type === "error") {
-      onTxnError(event.data);
-    }
+  if (event.data.type === "success") {
+    simpleConfig.onSuccess?.(event.data);
+  } else if (event.data.type === "error") {
+    simpleConfig.onError?.(event.data);
   }
+});
 
-  window.addEventListener("message", handleMessage);
+window.applySimpleConfig = function (config) {
+  if (config) {
+    simpleConfig = { ...simpleConfig, ...config };
+    injectSimpleIcon(validateConfig(config)?.length === 0);
+  } else {
+    console.debug("Simple config: Clearing all config...");
+    simpleConfig = {};
+    injectSimpleIcon(false);
+  }
+  console.debug("Simple config:", simpleConfig);
 };
 
-export function initializeSDK() {
-  console.info("initializeSDK");
-
+function injectSimpleIcon(inject: boolean) {
   const emailInputs = document.querySelectorAll(
     ".simple-input input, input.simple-input",
   ) as NodeListOf<HTMLInputElement>;
 
   emailInputs.forEach((input) => {
-    if (input.dataset.simpleIconAdded) return;
+    if (input.dataset.simpleIconAdded === inject.toString()) return;
+
+    if (!inject) {
+      console.info("Removing Simple icon");
+      // Find the wrapper div (parent of the input)
+      const wrapper = input.parentElement;
+      if (wrapper && wrapper.classList.contains("simple-wrapper")) {
+        // Move the input back to its original position
+        wrapper.parentNode?.insertBefore(input, wrapper);
+        // Remove the wrapper (which also removes the icon)
+        wrapper.remove();
+      }
+
+      // Reset the input styles
+      input.style.paddingRight = "";
+      input.dataset.simpleIconAdded = "false";
+      return;
+    }
+
+    console.info("Injecting Simple icon");
 
     const wrapper = document.createElement("div");
+    wrapper.classList.add("simple-wrapper"); // Add class for easier identification
 
     wrapper.style.position = "relative";
     wrapper.style.display = "inherit";
@@ -69,7 +81,8 @@ export function initializeSDK() {
     icon.title = "Pay with Simple";
 
     wrapper.appendChild(icon);
-    console.log("Simple icon added");
+
+    console.info("Simple icon added");
 
     input.dataset.simpleIconAdded = "true";
 

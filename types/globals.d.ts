@@ -12,14 +12,12 @@ declare global {
       endDate?: string;
       totalPayments?: number;
     };
+    onSuccess?: (merchantResponse: unknown) => void;
+    onError?: (error: unknown) => void;
   };
 
   interface Window {
-    setupSimple: (
-      args: SimpleConfig,
-      onTxnSuccess: (txn: unknown) => void,
-      onTxnError: (error: unknown) => void,
-    ) => void;
+    applySimpleConfig: (args?: Partial<SimpleConfig>) => void;
   }
 }
 

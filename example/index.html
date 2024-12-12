@@ -182,52 +182,45 @@
         }
       });
 
-      // Initialize Simple SDK with form data
-      function updateSimpleConfig() {
-        const config = {
+      // initialize the config
+      window.applySimpleConfig({
+        platformId: platformIdInput.value,
+        organizationId: organizationIdInput.value,
+        onSuccess: (txn) => document.getElementById("response").textContent = JSON.stringify(txn,null,2),
+        onError: (error) => document.getElementById("response").textContent = JSON.stringify(error,null,2),
+      });
+
+      // update the config when the platformId changes
+      platformIdInput.addEventListener("change", () => {
+        window.applySimpleConfig({
           platformId: platformIdInput.value,
+        });
+      });
+
+      // update the config when the organizationId changes
+      organizationIdInput.addEventListener("change", () => {
+        window.applySimpleConfig({
           organizationId: organizationIdInput.value,
-          amount: amountInput.value || "10.00",
-        };
-
-        if (enableRecurring.checked) {
-          config.schedule = {
-            intervalType: intervalType.value,
-            intervalCount: parseInt(intervalCount.value),
-            startDate: document.getElementById("startDate").value || undefined,
-            endDate: document.getElementById("endDate").value || undefined,
-            totalPayments: document.getElementById("totalPayments").value
-              ? parseInt(document.getElementById("totalPayments").value)
-              : undefined,
-          };
-        }
-
-        window.setupSimple(
-          config,
-          (txn) => {
-            document.getElementById("response").textContent = JSON.stringify(
-              txn,
-              null,
-              2,
-            );
-          },
-          (error) => {
-            document.getElementById("response").textContent = JSON.stringify(
-              error,
-              null,
-              2,
-            );
-          },
-        );
-      }
+        });
+      });
 
       // Update config when form values change
-      form.addEventListener("change", updateSimpleConfig);
-      platformIdInput.addEventListener("change", updateSimpleConfig);
-      organizationIdInput.addEventListener("change", updateSimpleConfig);
-
-      // Initial setup
-      updateSimpleConfig();
+      form.addEventListener("change", () => {
+        window.applySimpleConfig({
+          amount: amountInput.value,
+          schedule: enableRecurring.checked
+            ? {
+                intervalType: intervalType.value,
+                intervalCount: parseInt(intervalCount.value),
+                startDate: document.getElementById("startDate").value || undefined,
+                endDate: document.getElementById("endDate").value || undefined,
+                totalPayments: document.getElementById("totalPayments").value
+              ? parseInt(document.getElementById("totalPayments").value)
+                  : undefined,
+              }
+            : undefined,
+        });
+      });
     </script>
   </body>
 
