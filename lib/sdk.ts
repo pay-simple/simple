@@ -42,10 +42,16 @@ function injectSimpleIcon(inject: boolean) {
       // Find the wrapper div (parent of the input)
       const wrapper = input.parentElement;
       if (wrapper && wrapper.classList.contains("simple-wrapper")) {
-        // Move the input back to its original position
-        wrapper.parentNode?.insertBefore(input, wrapper);
-        // Remove the wrapper (which also removes the icon)
-        wrapper.remove();
+        const icon: HTMLDivElement | null =
+          wrapper.querySelector("div:last-child");
+        // Fade out the icon
+        if (icon) icon.style.opacity = "0";
+        setTimeout(() => {
+          // Move the input back to its original position
+          wrapper.parentNode?.insertBefore(input, wrapper);
+          // Remove the wrapper (which also removes the icon)
+          wrapper.remove();
+        }, 500);
       }
 
       // Reset the input styles
@@ -57,7 +63,7 @@ function injectSimpleIcon(inject: boolean) {
     console.info("Injecting Simple icon");
 
     const wrapper = document.createElement("div");
-    wrapper.classList.add("simple-wrapper"); // Add class for easier identification
+    wrapper.classList.add("simple-wrapper");
 
     wrapper.style.position = "relative";
     wrapper.style.display = "inherit";
@@ -78,9 +84,16 @@ function injectSimpleIcon(inject: boolean) {
     icon.style.alignItems = "center";
     icon.style.justifyContent = "center";
     icon.style.cursor = "pointer";
+    icon.style.opacity = "0"; // Start with opacity 0
+    icon.style.transition = "opacity 0.5s ease"; // Add transition
     icon.title = "Pay with Simple";
 
     wrapper.appendChild(icon);
+
+    // Trigger reflow and fade in the icon
+    setTimeout(() => {
+      icon.style.opacity = "1";
+    }, 0);
 
     console.info("Simple icon added");
 
