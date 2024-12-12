@@ -3,6 +3,7 @@ declare global {
     platformId: string;
     organizationId: string;
     amount: string;
+    email?: string;
     schedule?: {
       intervalType: "day" | "week" | "month" | "year";
       intervalCount: number;

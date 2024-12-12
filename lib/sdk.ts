@@ -5,7 +5,7 @@ import { validateConfig } from "./validator";
 let simpleConfig: Partial<SimpleConfig> = {};
 
 window.addEventListener("message", (event: MessageEvent) => {
-  if (event.origin !== window.location.origin) {
+  if (event.origin !== getBaseUrl()) {
     console.warn("Origin mismatch:", event.origin);
     return;
   }
@@ -110,6 +110,7 @@ function injectSimpleIcon(inject: boolean) {
         platformId: simpleConfig.platformId,
         organizationId: simpleConfig.organizationId,
         amount: simpleConfig.amount,
+        email: simpleConfig.email,
         ...simpleConfig.schedule,
       };
 
