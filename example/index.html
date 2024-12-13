@@ -186,8 +186,18 @@
       window.applySimpleConfig({
         platformId: platformIdInput.value,
         organizationId: organizationIdInput.value,
-        onSuccess: (txn) => document.getElementById("response").textContent = JSON.stringify(txn,null,2),
-        onError: (error) => document.getElementById("response").textContent = JSON.stringify(error,null,2),
+        onSuccess: (txn) =>
+          (document.getElementById("response").textContent = JSON.stringify(
+            txn,
+            null,
+            2,
+          )),
+        onError: (error) =>
+          (document.getElementById("response").textContent = JSON.stringify(
+            error,
+            null,
+            2,
+          )),
       });
 
       // update the config when the platformId changes
@@ -212,10 +222,11 @@
             ? {
                 intervalType: intervalType.value,
                 intervalCount: parseInt(intervalCount.value),
-                startDate: document.getElementById("startDate").value || undefined,
+                startDate:
+                  document.getElementById("startDate").value || undefined,
                 endDate: document.getElementById("endDate").value || undefined,
                 totalPayments: document.getElementById("totalPayments").value
-              ? parseInt(document.getElementById("totalPayments").value)
+                  ? parseInt(document.getElementById("totalPayments").value)
                   : undefined,
               }
             : undefined,
