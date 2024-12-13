@@ -1,7 +1,7 @@
 declare global {
   type SimpleConfig = {
     platformId: string;
-    organizationId: string;
+    organizationTaxId: string;
     amount: string;
     email?: string;
     schedule?: {

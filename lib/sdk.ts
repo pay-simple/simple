@@ -20,7 +20,14 @@ window.addEventListener("message", (event: MessageEvent) => {
 window.applySimpleConfig = function (config) {
   if (config) {
     simpleConfig = { ...simpleConfig, ...config };
-    injectSimpleIcon(validateConfig(config)?.length === 0);
+    validateConfig(simpleConfig)
+      .then((errors) => {
+        injectSimpleIcon(errors?.length === 0);
+      })
+      .catch((error) => {
+        console.error("Failed to validate config:", error);
+        injectSimpleIcon(false);
+      });
   } else {
     console.debug("Simple config: Clearing all config...");
     simpleConfig = {};
@@ -108,7 +115,7 @@ function injectSimpleIcon(inject: boolean) {
 
       const params = {
         platformId: simpleConfig.platformId,
-        organizationId: simpleConfig.organizationId,
+        organizationTaxId: simpleConfig.organizationTaxId,
         amount: simpleConfig.amount,
         email: simpleConfig.email,
         ...simpleConfig.schedule,

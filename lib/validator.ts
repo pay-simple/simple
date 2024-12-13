@@ -1,10 +1,14 @@
 import { DATE_REGEX, SIMPLE_OBJECT_ID_REGEX } from "./constants";
+import { getBaseUrl } from "./utils";
 
 let debugTimeout: number | null = null;
 
-export function validateConfig(
+let lastValidatedPlatformId: string | undefined;
+let lastValidatedOrganizationTaxId: string | undefined;
+
+export async function validateConfig(
   config?: Partial<SimpleConfig>,
-): string[] | null {
+): Promise<string[] | null> {
   if (typeof config !== "object" || config === null) {
     return null;
   }
@@ -15,11 +19,8 @@ export function validateConfig(
     errors.push("Invalid platformId!");
   }
 
-  if (
-    config.organizationId &&
-    !SIMPLE_OBJECT_ID_REGEX.test(config.organizationId)
-  ) {
-    errors.push("Invalid organizationId!");
+  if (!config.organizationTaxId) {
+    errors.push("Invalid organizationTaxId!");
   }
 
   if (!config.amount || isNaN(Number(config.amount))) {
@@ -74,6 +75,25 @@ export function validateConfig(
         "Invalid schedule!, 'endDate' and 'totalPayments' cannot be set together!",
       );
     }
+  }
+
+  // validate platformId and organizationTaxId from backend
+  if (
+    !errors.length &&
+    (config.platformId !== lastValidatedPlatformId ||
+      config.organizationTaxId !== lastValidatedOrganizationTaxId)
+  ) {
+    const response = await fetch(
+      `${getBaseUrl()}/api/popup/verify-ids?platformId=${config.platformId}&organizationTaxId=${config.organizationTaxId}`,
+    );
+    const data = await response.json();
+    if (!response.ok || data?.error) {
+      errors.push(
+        data?.error || "Failed to validate platformId and organizationTaxId!",
+      );
+    }
+    lastValidatedPlatformId = config.platformId;
+    lastValidatedOrganizationTaxId = config.organizationTaxId;
   }
 
   if (debugTimeout) {

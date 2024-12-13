@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Simple Payment Form</title>
-    <script src="https://cdn.jsdelivr.net/gh/pay-simple/simple@1.1/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@paysimple/simple-dev@0.0"></script>
   </head>
 
   <body>
@@ -34,14 +34,14 @@
           </div>
 
           <div>
-            <label for="organizationId">
-              Organization ID<span class="required">*</span>
+            <label for="organizationTaxId">
+              Organization Tax ID<span class="required">*</span>
             </label>
 
             <input
               type="text"
-              id="organizationId"
-              placeholder="Enter organization ID"
+              id="organizationTaxId"
+              placeholder="Enter organization tax ID"
               required
             />
           </div>
@@ -159,18 +159,18 @@
       const form = document.getElementById("paymentForm");
       const amountInput = document.getElementById("amount");
       const platformIdInput = document.getElementById("platformId");
-      const organizationIdInput = document.getElementById("organizationId");
+      const organizationTaxIdInput = document.getElementById("organizationTaxId");
 
       // Load saved configuration from localStorage
       platformIdInput.value = localStorage.simplePlatformId || "";
-      organizationIdInput.value = localStorage.simpleOrganizationId || "";
+      organizationTaxIdInput.value = localStorage.simpleOrganizationTaxId || "";
 
       // Save configuration to localStorage
       platformIdInput.addEventListener("change", () => {
         localStorage.simplePlatformId = platformIdInput.value;
       });
-      organizationIdInput.addEventListener("change", () => {
-        localStorage.simpleOrganizationId = organizationIdInput.value;
+      organizationTaxIdInput.addEventListener("change", () => {
+        localStorage.simpleOrganizationTaxId = organizationTaxIdInput.value;
       });
 
       // Toggle recurring payment options
@@ -185,7 +185,7 @@
       // initialize the config
       window.applySimpleConfig({
         platformId: platformIdInput.value,
-        organizationId: organizationIdInput.value,
+        organizationTaxId: organizationTaxIdInput.value,
         onSuccess: (txn) =>
           (document.getElementById("response").textContent = JSON.stringify(
             txn,
@@ -207,10 +207,10 @@
         });
       });
 
-      // update the config when the organizationId changes
-      organizationIdInput.addEventListener("change", () => {
+      // update the config when the organizationTaxId changes
+      organizationTaxIdInput.addEventListener("change", () => {
         window.applySimpleConfig({
-          organizationId: organizationIdInput.value,
+          organizationTaxId: organizationTaxIdInput.value,
         });
       });
 
