@@ -19,3 +19,19 @@ export function getBaseUrl() {
     ? "https://app.paysimple.io"
     : "https://test.paysimple.io";
 }
+
+export const parseErrorMessage = (error: unknown, defaultMessage?: string) => {
+  let message = "";
+
+  if (error instanceof Error) {
+    message = error.message;
+  } else if (error && typeof error === "object" && "message" in error) {
+    message = String(error.message);
+  } else if (typeof error === "string") {
+    message = error;
+  } else {
+    message = defaultMessage ?? "An unknown error occurred";
+  }
+
+  return message;
+};

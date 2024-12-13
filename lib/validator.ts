@@ -1,4 +1,4 @@
-import { SIMPLE_OBJECT_ID_REGEX, DATE_REGEX } from "./constants";
+import { DATE_REGEX, SIMPLE_OBJECT_ID_REGEX } from "./constants";
 
 let debugTimeout: number | null = null;
 
