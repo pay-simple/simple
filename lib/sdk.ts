@@ -7,11 +7,7 @@ let simpleConfig: Partial<SimpleConfig> = {};
 window.addEventListener("message", (event: MessageEvent) => {
   if (event.origin !== getBaseUrl()) return;
 
-  if (event.data.type === "success") {
-    simpleConfig.onSuccess?.(event.data);
-  } else if (event.data.type === "error") {
-    simpleConfig.onError?.(event.data);
-  }
+  if (event.data.type === "success") simpleConfig.onSuccess?.(event.data);
 });
 
 window.applySimpleConfig = function (config) {
