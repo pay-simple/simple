@@ -21,7 +21,7 @@ const server = Bun.serve({
 
     // Replace the jsDelivr CDN link with the local development version
     const modifiedHtml = html.replace(
-      "https://cdn.jsdelivr.net/gh/pay-simple/simple@1.1/dist/index.min.js",
+      "https://cdn.jsdelivr.net/npm/@paysimple/simple-dev",
       "http://localhost:8000/sdk",
     );
 
