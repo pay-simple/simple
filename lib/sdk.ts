@@ -1,5 +1,9 @@
 import { PAY_WITH_SIMPLE_SVG } from "./constants";
-import { getBaseUrl, removeEmptyValues } from "./utils";
+import {
+  createRenewableAbortController,
+  getBaseUrl,
+  removeEmptyValues,
+} from "./utils";
 import { validateConfig } from "./validator";
 
 let simpleConfig: Partial<SimpleConfig> = {};
@@ -29,11 +33,45 @@ window.applySimpleConfig = function (config) {
   console.debug("Simple config:", simpleConfig);
 };
 
-function onEmailInputChanged(event: Event) {
-  window.applySimpleConfig({ email: (event.target as HTMLInputElement).value });
-}
+const inputListenerAbortController = createRenewableAbortController();
+const checkEmailAbortController = createRenewableAbortController();
+let openPopupOnEmailChangeTimeout: Timer | undefined;
+const lastEmailValidationResult = {
+  email: "",
+  isValid: false,
+};
 
 function injectSimpleIcon(inject: boolean) {
+  //cleanup old listeners
+  clearTimeout(openPopupOnEmailChangeTimeout);
+  checkEmailAbortController.renew();
+  if (!inject) inputListenerAbortController.renew();
+
+  // auto open popup if email is set and valid
+  if (
+    simpleConfig.email &&
+    simpleConfig.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
+  ) {
+    if (lastEmailValidationResult.email === simpleConfig.email) {
+      if (lastEmailValidationResult.isValid)
+        openPopupOnEmailChangeTimeout = setTimeout(openPaymentPopup, 1000);
+    } else {
+      openPopupOnEmailChangeTimeout = setTimeout(async () => {
+        const response = await fetch(
+          `${getBaseUrl()}/api/popup/check-email?platformId=${simpleConfig.platformId}&email=${simpleConfig.email}`,
+          { signal: checkEmailAbortController.signal },
+        );
+        if (response.ok) {
+          const isRegistered = (await response.json()).isRegistered;
+          if (isRegistered) openPaymentPopup();
+          lastEmailValidationResult.email = simpleConfig.email || "";
+          lastEmailValidationResult.isValid = isRegistered;
+          if (isRegistered) openPaymentPopup();
+        }
+      }, 1000);
+    }
+  }
+
   let emailInputs = document.querySelectorAll(
     ".simple-email input, input.simple-email",
   ) as NodeListOf<HTMLInputElement>;
@@ -64,7 +102,6 @@ function injectSimpleIcon(inject: boolean) {
 
       // Reset the input styles
       input.style.paddingRight = "";
-      input.removeEventListener("change", onEmailInputChanged);
 
       input.dataset.simpleIconAdded = "false";
       return;
@@ -105,34 +142,39 @@ function injectSimpleIcon(inject: boolean) {
       icon.style.opacity = "1";
     }, 0);
 
-    input.addEventListener("change", onEmailInputChanged);
+    icon.addEventListener("click", openPaymentPopup);
 
-    console.debug("Simple icon added");
+    input.addEventListener(
+      "change",
+      () => window.applySimpleConfig({ email: input.value }),
+      { signal: inputListenerAbortController.signal },
+    );
 
     input.dataset.simpleIconAdded = "true";
-
-    icon.addEventListener("click", () => {
-      const width = 500;
-      const height = 600;
-
-      const left = (window.screen.width - width) / 2 + window.screenLeft;
-      const top = (window.screen.height - height) / 2;
-
-      const params = {
-        platformId: simpleConfig.platformId,
-        organizationTaxId: simpleConfig.organizationTaxId,
-        amount: simpleConfig.amount,
-        email: simpleConfig.email,
-        ...simpleConfig.schedule,
-      };
-
-      window.open(
-        `${getBaseUrl()}/payment?${new URLSearchParams(
-          removeEmptyValues(params),
-        ).toString()}`,
-        "PopupWindow",
-        `width=${width},height=${height},left=${left},top=${top}`,
-      );
-    });
+    console.debug("Simple icon added");
   });
+}
+
+function openPaymentPopup() {
+  const width = 500;
+  const height = 600;
+
+  const left = (window.screen.width - width) / 2 + window.screenLeft;
+  const top = (window.screen.height - height) / 2;
+
+  const params = {
+    platformId: simpleConfig.platformId,
+    organizationTaxId: simpleConfig.organizationTaxId,
+    amount: simpleConfig.amount,
+    email: simpleConfig.email,
+    ...simpleConfig.schedule,
+  };
+
+  window.open(
+    `${getBaseUrl()}/payment?${new URLSearchParams(
+      removeEmptyValues(params),
+    ).toString()}`,
+    "PopupWindow",
+    `width=${width},height=${height},left=${left},top=${top}`,
+  );
 }

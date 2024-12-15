@@ -20,6 +20,17 @@ export function getBaseUrl() {
     : "https://test.paysimple.io";
 }
 
+export function createRenewableAbortController(): AbortController & {
+  renew: () => void;
+} {
+  let abortController = new AbortController();
+  const renew = () => {
+    abortController.abort();
+    abortController = new AbortController();
+  };
+  return { ...abortController, renew };
+}
+
 export const parseErrorMessage = (error: unknown, defaultMessage?: string) => {
   let message = "";
 
