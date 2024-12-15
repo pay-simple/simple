@@ -137,7 +137,7 @@ const publishPackage = async (packageName: string, newVersion: string) => {
     console.log(
       colors.yellow(`Building ${packageName} with version ${newVersion}...`),
     );
-    await execPromise(`npm run build`);
+    await execPromise(`NODE_ENV=production bun run build`);
 
     console.log(
       colors.yellow(
