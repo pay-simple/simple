@@ -5,10 +5,7 @@ import { validateConfig } from "./validator";
 let simpleConfig: Partial<SimpleConfig> = {};
 
 window.addEventListener("message", (event: MessageEvent) => {
-  if (event.origin !== getBaseUrl()) {
-    console.warn("Origin mismatch:", event.origin);
-    return;
-  }
+  if (event.origin !== getBaseUrl()) return;
 
   if (event.data.type === "success") {
     simpleConfig.onSuccess?.(event.data);
@@ -36,10 +33,18 @@ window.applySimpleConfig = function (config) {
   console.debug("Simple config:", simpleConfig);
 };
 
+function onEmailInputChanged(event: Event) {
+  window.applySimpleConfig({ email: (event.target as HTMLInputElement).value });
+}
+
 function injectSimpleIcon(inject: boolean) {
-  const emailInputs = document.querySelectorAll(
-    ".simple-input input, input.simple-input",
+  let emailInputs = document.querySelectorAll(
+    ".simple-email input, input.simple-email",
   ) as NodeListOf<HTMLInputElement>;
+  if (!emailInputs.length)
+    emailInputs = document.querySelectorAll(
+      "input[type='email']",
+    ) as NodeListOf<HTMLInputElement>;
 
   emailInputs.forEach((input) => {
     if (input.dataset.simpleIconAdded === inject.toString()) return;
@@ -63,11 +68,13 @@ function injectSimpleIcon(inject: boolean) {
 
       // Reset the input styles
       input.style.paddingRight = "";
+      input.removeEventListener("change", onEmailInputChanged);
+
       input.dataset.simpleIconAdded = "false";
       return;
     }
 
-    console.info("Injecting Simple icon");
+    console.debug("Injecting Simple icon");
 
     const wrapper = document.createElement("div");
     wrapper.classList.add("simple-wrapper");
@@ -102,7 +109,9 @@ function injectSimpleIcon(inject: boolean) {
       icon.style.opacity = "1";
     }, 0);
 
-    console.info("Simple icon added");
+    input.addEventListener("change", onEmailInputChanged);
+
+    console.debug("Simple icon added");
 
     input.dataset.simpleIconAdded = "true";
 
