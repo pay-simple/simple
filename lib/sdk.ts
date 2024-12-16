@@ -8,6 +8,8 @@ import { validateConfig } from "./validator";
 
 const state = {
   config: {} as Partial<SimpleConfig>,
+  autoOpenTimeout: undefined as Timer | undefined,
+  popup: null as Window | null,
   abortControllers: {
     emailListener: createRenewableAbortController(),
     emailCheck: createRenewableAbortController(),
@@ -18,7 +20,6 @@ const state = {
       isValid: false,
     },
   },
-  autoOpenTimeout: undefined as Timer | undefined,
 };
 
 // Event listener for postMessage
@@ -60,7 +61,7 @@ function openPaymentPopup() {
     ...state.config.schedule,
   };
 
-  window.open(
+  state.popup = window.open(
     `${getBaseUrl()}/payment?${new URLSearchParams(removeEmptyValues(params)).toString()}`,
     "PopupWindow",
     `width=${width},height=${height},left=${left},top=${top}`,
@@ -135,6 +136,9 @@ async function checkEmailAndOpenPopup() {
   const { email } = state.config;
   const { lastResult } = state.emailValidation;
 
+  // If no email or popup is open, do nothing
+  if (!email || (state.popup && !state.popup.closed)) return;
+
   // Validate email format
   if (
     !email?.match(
@@ -178,13 +182,12 @@ async function checkEmailAndOpenPopup() {
 }
 
 function applySimple(apply: boolean) {
-  // Cleanup
   clearTimeout(state.autoOpenTimeout);
   state.abortControllers.emailCheck.renew();
-  if (!apply) state.abortControllers.emailListener.renew();
+  if (apply) state.autoOpenTimeout = setTimeout(checkEmailAndOpenPopup, 1000);
+  else state.abortControllers.emailListener.renew();
 
   // Auto open popup if email is valid
-  state.autoOpenTimeout = setTimeout(checkEmailAndOpenPopup, 1000);
 
   // Find and process all email inputs
   let emailInputs = document.querySelectorAll(
