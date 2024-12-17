@@ -1,5 +1,4 @@
-import { DATE_REGEX, SIMPLE_OBJECT_ID_REGEX } from "./constants";
-import { getBaseUrl } from "./utils";
+import { BASE_URL, DATE_REGEX, SIMPLE_OBJECT_ID_REGEX } from "./constants";
 
 let debugTimeout: number | null = null;
 
@@ -84,7 +83,7 @@ export async function validateConfig(
       config.organizationTaxId !== lastValidatedOrganizationTaxId)
   ) {
     const response = await fetch(
-      `${getBaseUrl()}/api/popup/verify-ids?platformId=${config.platformId}&organizationTaxId=${config.organizationTaxId}`,
+      `${BASE_URL}/api/popup/verify-ids?platformId=${config.platformId}&organizationTaxId=${config.organizationTaxId}`,
     );
     const data = await response.json();
     if (!response.ok || data?.error) {
@@ -101,7 +100,7 @@ export async function validateConfig(
   }
   if (errors.length > 0) {
     debugTimeout = window.setTimeout(() => {
-      console.debug("Simple config validation errors:", errors);
+      console.error("Simple config validation errors:", errors);
     }, 500);
   }
 

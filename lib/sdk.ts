@@ -1,9 +1,5 @@
-import { PAY_WITH_SIMPLE_SVG } from "./constants";
-import {
-  createRenewableAbortController,
-  getBaseUrl,
-  removeEmptyValues,
-} from "./utils";
+import { BASE_URL, PAY_WITH_SIMPLE_SVG } from "./constants";
+import { createRenewableAbortController, removeEmptyValues } from "./utils";
 import { validateConfig } from "./validator";
 
 const state = {
@@ -24,7 +20,7 @@ const state = {
 
 // Event listener for postMessage
 window.addEventListener("message", (event: MessageEvent) => {
-  if (event.origin === getBaseUrl() && event.data.type === "success") {
+  if (event.origin === BASE_URL && event.data.type === "success") {
     state.config.onSuccess?.(event.data);
   }
 });
@@ -62,7 +58,7 @@ function openPaymentPopup() {
   };
 
   state.popup = window.open(
-    `${getBaseUrl()}/payment?${new URLSearchParams(removeEmptyValues(params)).toString()}`,
+    `${BASE_URL}/payment?${new URLSearchParams(removeEmptyValues(params)).toString()}`,
     "PopupWindow",
     `width=${width},height=${height},left=${left},top=${top}`,
   );
@@ -71,9 +67,26 @@ function openPaymentPopup() {
 function addSimpleIcon(input: HTMLInputElement) {
   console.debug("Injecting Simple icon");
 
+  // Get computed margins from input
+  const computedStyle = window.getComputedStyle(input);
+  const margins = {
+    top: computedStyle.marginTop,
+    right: computedStyle.marginRight,
+    bottom: computedStyle.marginBottom,
+    left: computedStyle.marginLeft,
+  };
+
   const wrapper = document.createElement("div");
   wrapper.classList.add("simple-wrapper");
-  wrapper.style.cssText = "position: relative; display: inherit; width: 100%;";
+  wrapper.style.cssText = `
+    position: relative;
+    display: inherit;
+    width: 100%;
+    margin: ${margins.top} ${margins.right} ${margins.bottom} ${margins.left};
+  `;
+
+  // Remove margins from input
+  input.style.margin = "0";
 
   input.parentNode?.insertBefore(wrapper, input);
   wrapper.appendChild(input);
@@ -160,7 +173,7 @@ async function checkEmailAndOpenPopup() {
   try {
     console.debug("Checking if email is registered:", email);
     const response = await fetch(
-      `${getBaseUrl()}/api/popup/check-email?platformId=${state.config.platformId}&email=${email}`,
+      `${BASE_URL}/api/popup/check-email?platformId=${state.config.platformId}&email=${email}`,
       { signal: state.abortControllers.emailCheck.signal },
     );
 

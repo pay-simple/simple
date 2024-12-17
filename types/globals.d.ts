@@ -14,7 +14,6 @@ declare global {
       totalPayments?: number;
     };
     onSuccess?: (merchantResponse: unknown) => void;
-    onError?: (error: unknown) => void;
   };
 
   interface Window {

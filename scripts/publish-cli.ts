@@ -10,13 +10,38 @@ import { parseErrorMessage } from "../lib/utils";
 
 const execPromise = util.promisify(exec);
 
+/**
+ * Fetches the latest version of a given package from the npm registry.
+ * @param {string} packageName - The name of the package to fetch the version for.
+ * @returns {Promise<string>} - The latest version of the package.
+ */
 const getLatestVersion = async (packageName: string): Promise<string> => {
   const response = await fetch(`https://registry.npmjs.org/${packageName}`);
   const data = await response.json();
-  return data["dist-tags"].latest;
+
+  if (response.ok) {
+    return data["dist-tags"].latest;
+  } else if (data.error === "Not found") {
+    return "0.0.0";
+  }
+
+  console.error(colors.red("Package not found, exiting..."));
+  process.exit(1);
 };
 
-const runPrompts = async () => {
+/**
+ * Runs a series of prompts to gather user input for publishing a package.
+ * @returns {Promise<object>} - The responses from the prompts.
+ */
+const runPrompts = async (): Promise<
+  prompts.Answers<
+    | "environment"
+    | "versionType"
+    | "customVersion"
+    | "verifyVersion"
+    | "confirmPublish"
+  >
+> => {
   let latestVersion: string | null = null;
 
   const responses = await prompts(
@@ -89,6 +114,10 @@ const runPrompts = async () => {
   return responses;
 };
 
+/**
+ * Ensures that the distribution path exists, creating it if necessary.
+ * @param {string} distPath - The path to the distribution directory.
+ */
 const ensureDistPathExists = (distPath: string) => {
   if (!fs.existsSync(distPath)) {
     fs.mkdirSync(distPath, { recursive: true });
@@ -96,6 +125,13 @@ const ensureDistPathExists = (distPath: string) => {
   }
 };
 
+/**
+ * Updates the package.json file with the new package name and version.
+ * @param {string} rootPath - The root directory path.
+ * @param {string} distPath - The distribution directory path.
+ * @param {string} packageName - The new package name.
+ * @param {string} newVersion - The new version of the package.
+ */
 const updatePackageJson = (
   rootPath: string,
   distPath: string,
@@ -114,47 +150,87 @@ const updatePackageJson = (
   );
 };
 
-const copyFilesToDist = (rootPath: string, distPath: string) => {
-  fs.copyFileSync(
-    path.join(rootPath, "README.npm.md"),
-    path.join(distPath, "README.md"),
+/**
+ * Updates the CDN URLs in the README file based on the package name.
+ * @param {string} rootPath - The root directory path.
+ * @param {string} distPath - The distribution directory path.
+ * @param {string} packageName - The package name to update the URLs for.
+ */
+const updateReadmeUrls = (
+  rootPath: string,
+  distPath: string,
+  packageName: string,
+) => {
+  console.log(colors.cyan("Updating README CDN URLs..."));
+  const readmePath = path.join(rootPath, "README.npm.md");
+  let readmeContent = fs.readFileSync(readmePath, "utf-8");
+
+  // Replace CDN URLs based on package name
+  const cdnUrl = `https://cdn.jsdelivr.net/npm/${packageName}`;
+  readmeContent = readmeContent.replace(
+    /https:\/\/cdn\.jsdelivr\.net\/npm\/@paysimple\/simple(?:-dev)?/g,
+    cdnUrl,
   );
-  fs.copyFileSync(
-    path.join(rootPath, "package.npm.json"),
-    path.join(distPath, "package.json"),
-  );
+
+  const updatedReadmePath = path.join(distPath, "README.md");
+  fs.writeFileSync(updatedReadmePath, readmeContent);
 };
 
+/**
+ * Prepares and publishes the package to npm.
+ * @param {string} packageName - The name of the package to publish.
+ * @param {string} newVersion - The version of the package to publish.
+ */
 const publishPackage = async (packageName: string, newVersion: string) => {
   const rootPath = path.resolve(__dirname, "..");
   const distPath = path.resolve(__dirname, "../dist");
   try {
     ensureDistPathExists(distPath);
     console.log(colors.cyan("Preparing files for publishing..."));
-    copyFilesToDist(rootPath, distPath);
     updatePackageJson(rootPath, distPath, packageName, newVersion);
+    updateReadmeUrls(rootPath, distPath, packageName);
 
     console.log(
       colors.yellow(`Building ${packageName} with version ${newVersion}...`),
     );
     await execPromise(`NODE_ENV=production bun run build`);
 
-    console.log(
-      colors.yellow(
-        `Publishing to ${packageName} with version ${newVersion}...`,
-      ),
-    );
-    await execPromise(`npm publish ${distPath} --access public --tag latest`);
-    console.log(
-      colors.green(
-        `Successfully published ${packageName} version ${newVersion}!`,
-      ),
-    );
+    // Check if we're publishing to production
+    const isProduction = packageName === "@paysimple/simple";
+
+    if (isProduction) {
+      console.log(
+        colors.yellow("\nProduction package prepared for publishing!"),
+      );
+      console.log(colors.cyan("\nPlease verify the following:"));
+      console.log("1. Check the contents of the dist folder");
+      console.log("2. Verify the package.json version and name");
+      console.log("3. Confirm the README CDN URLs are correct");
+      console.log("\nThen run manually:");
+      console.log(
+        colors.green(`npm publish ${distPath} --access public --tag latest`),
+      );
+    } else {
+      console.log(
+        colors.yellow(
+          `Publishing to ${packageName} with version ${newVersion}...`,
+        ),
+      );
+      await execPromise(`npm publish ${distPath} --access public --tag latest`);
+      console.log(
+        colors.green(
+          `Successfully published ${packageName} version ${newVersion}!`,
+        ),
+      );
+    }
   } catch (error) {
     console.error(colors.red(`Failed to publish: ${parseErrorMessage(error)}`));
   }
 };
 
+/**
+ * Initializes the CLI process, running prompts and publishing the package if confirmed.
+ */
 const init = async () => {
   console.clear();
   console.log(`${colors.bgGreenBright(colors.bold("Simple Publish CLI"))}\n`);

@@ -10,16 +10,6 @@ export function removeEmptyValues<T extends object>(obj: T) {
   );
 }
 
-export function isProduction() {
-  return process.env.NODE_ENV === "production";
-}
-
-export function getBaseUrl() {
-  return isProduction()
-    ? "https://app.paysimple.io"
-    : "https://test.paysimple.io";
-}
-
 export function createRenewableAbortController(): AbortController & {
   renew: () => void;
 } {
