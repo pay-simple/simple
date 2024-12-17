@@ -1,10 +1,10 @@
-# [Simple CDN](https://www.paysimple.io)
+# [Simple SDK](https://github.com/pay-simple/simple)
 
-[Simple CDN](https://www.paysimple.io) is a lightweight JavaScript library designed to simplify payment integration for web applications. It provides a seamless way to handle payment configurations and interactions through a simple API.
+[Simple SDK](https://github.com/pay-simple/simple) is a lightweight JavaScript library designed to simplify payment integration for web applications. It provides a seamless way to handle payment configurations and interactions through a simple API.
 
 ## Quick Start Example
 
-Get started with Simple CDN in just 3 steps:
+Get started with Simple SDK in just 3 steps:
 
 ```html
 <!-- 1. Include the Simple script -->
@@ -18,7 +18,7 @@ Get started with Simple CDN in just 3 steps:
   window.applySimpleConfig({
     platformId: "your_platform_id",
     organizationTaxId: "your_organization_tax_id",
-    amount: 1000, // $10.00
+    amount: 10.99,
     onSuccess: (response) => console.log("Payment successful!", response),
   });
 </script>
@@ -109,11 +109,9 @@ You can update any configuration field dynamically by calling `applySimpleConfig
 ```javascript
 // Example: Update amount based on user selection
 const amountInput = document.querySelector("#amount");
-amountInput.addEventListener("change", (e) => {
-  window.applySimpleConfig({
-    amount: parseFloat(e.target.value), // Amount in dollars (e.g., 10.99)
-  });
-});
+amountInput.addEventListener("change", (e) =>
+  window.applySimpleConfig({ amount: e.target.value }),
+);
 ```
 
 ### Configuration Options
@@ -140,12 +138,12 @@ window.applySimpleConfig({
   schedule: {
     intervalType: "month", // "day" | "week" | "month" | "year"
     intervalCount: 1,
-    startDate: "2024-01-01", // Optional: When to start the subscription
-    // Option 1: Set an end date
-    endDate: "2024-12-31",
+    startDate?: "2024-01-01", // Optional: When to start the subscription
+    // Optional: Set total number of payments
+    totalPayments?: 12,
     // --OR--
-    // Option 2: Set total number of payments
-    totalPayments: 12,
+    // Optional: Set an end date
+    endDate?: "2024-12-31",
   },
 });
 ```

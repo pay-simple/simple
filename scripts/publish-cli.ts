@@ -155,21 +155,33 @@ const updatePackageJson = (
  * @param {string} rootPath - The root directory path.
  * @param {string} distPath - The distribution directory path.
  * @param {string} packageName - The package name to update the URLs for.
+ * @param {string} packageVersion - The version of the package to update the URLs for.
  */
 const updateReadmeUrls = (
   rootPath: string,
   distPath: string,
   packageName: string,
+  packageVersion: string,
 ) => {
-  console.log(colors.cyan("Updating README CDN URLs..."));
+  console.log(colors.cyan("Updating README CDN URLs and package names..."));
   const readmePath = path.join(rootPath, "README.npm.md");
   let readmeContent = fs.readFileSync(readmePath, "utf-8");
 
-  // Replace CDN URLs based on package name
-  const cdnUrl = `https://cdn.jsdelivr.net/npm/${packageName}`;
+  // Replace CDN URLs based on package name and version
+  const cdnUrl = `https://cdn.jsdelivr.net/npm/${packageName}@${packageVersion.replace(/(\d+\.\d+)\.\d+/, "$1")}`;
   readmeContent = readmeContent.replace(
     /https:\/\/cdn\.jsdelivr\.net\/npm\/@paysimple\/simple(?:-dev)?/g,
     cdnUrl,
+  );
+
+  // Replace npm package names in install and import statements
+  readmeContent = readmeContent.replace(
+    /npm install @paysimple\/simple(?:-dev)?/g,
+    `npm install ${packageName}`,
+  );
+  readmeContent = readmeContent.replace(
+    /import "@paysimple\/simple(?:-dev)?"/g,
+    `import "${packageName}"`,
   );
 
   const updatedReadmePath = path.join(distPath, "README.md");
@@ -188,15 +200,20 @@ const publishPackage = async (packageName: string, newVersion: string) => {
     ensureDistPathExists(distPath);
     console.log(colors.cyan("Preparing files for publishing..."));
     updatePackageJson(rootPath, distPath, packageName, newVersion);
-    updateReadmeUrls(rootPath, distPath, packageName);
+    updateReadmeUrls(rootPath, distPath, packageName, newVersion);
 
     console.log(
       colors.yellow(`Building ${packageName} with version ${newVersion}...`),
     );
-    await execPromise(`NODE_ENV=production bun run build`);
 
     // Check if we're publishing to production
     const isProduction = packageName === "@paysimple/simple";
+
+    if (isProduction) {
+      process.env.NODE_ENV = "production";
+    }
+
+    await execPromise(`bun run build`);
 
     if (isProduction) {
       console.log(
