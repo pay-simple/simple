@@ -4,10 +4,10 @@ A lightweight JavaScript SDK that adds Simple payment functionality to your web 
 
 ## Usage
 
-1. Initialize the SDK with your platform and organization IDs:
+1. Initialize the SDK with your `Platform ID` and `Organization Tax ID`:
 
 ```ts
-setupSimpleAccount("your-platform-id", "your-organization-id");
+setupSimpleAccount("your-platform-id", "your-organization-tax-id");
 ```
 
 2. The SDK will automatically:
@@ -47,10 +47,10 @@ bun serve
 
 The SDK accepts the following configuration parameters:
 
-| Parameter      | Type   | Description                 |
-| -------------- | ------ | --------------------------- |
-| platformId     | string | Your Simple platform ID     |
-| organizationId | string | Your Simple organization ID |
+| Parameter         | Type   | Description                     |
+| ----------------- | ------ | ------------------------------- |
+| platformId        | string | Your Simple platform ID         |
+| organizationTaxId | string | Your Simple organization tax ID |
 
 ## Contributing
 
