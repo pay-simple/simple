@@ -50,7 +50,7 @@ Add Simple directly to your HTML using our CDN:
 
 If you're using a build system, you can install via npm:
 
-```bash
+```sh npm2yarn
 npm install @paysimple/simple-dev
 ```
 
@@ -90,7 +90,7 @@ Choose this approach if you need more precise control over Simple's behavior on 
 
 ### 2. Configure Simple
 
-```javascript
+```typescript
 window.applySimpleConfig({
   platformId: "your_platform_id",
   organizationTaxId: "your_organization_tax_id",
@@ -106,7 +106,7 @@ window.applySimpleConfig({
 
 You can update any configuration field dynamically by calling `applySimpleConfig` with the new values:
 
-```javascript
+```typescript
 // Example: Update amount based on user selection
 const amountInput = document.querySelector("#amount");
 amountInput.addEventListener("change", (e) =>
@@ -132,7 +132,7 @@ amountInput.addEventListener("change", (e) =>
 
 For recurring payments, add a schedule object.
 
-```js
+```typescript {7-8,10-11}
 window.applySimpleConfig({
   // ... basic config
   schedule: {
