@@ -68,25 +68,37 @@ function addSimpleIcon(input: HTMLInputElement) {
   console.debug("Injecting Simple icon");
 
   // Get computed styles from input
-  const computedStyle = window.getComputedStyle(input);
-  const margins = {
-    top: computedStyle.marginTop,
-    right: computedStyle.marginRight,
-    bottom: computedStyle.marginBottom,
-    left: computedStyle.marginLeft,
+  // need to rewrite from original do to bu with assigning letter from original computedStyle
+  const computedStyle = { ...window.getComputedStyle(input) };
+
+  const inputStyles: Record<string, string> = {
+    // Remove margins from input
+    margin: "0px",
+    // Add padding to the right of the input to make space for the icon
+    // "padding-right": '40px',
   };
 
   // Check and set box-sizing to border-box if not already set
   if (computedStyle.boxSizing !== "border-box") {
-    const originalWidth = input.offsetWidth;
-    const originalHeight = input.offsetHeight;
-
-    input.style.boxSizing = "border-box";
+    inputStyles["box-sizing"] = "border-box";
 
     // Compensate for the change in box-sizing
-    input.style.width = `${originalWidth}px`;
-    input.style.height = `${originalHeight}px`;
+    inputStyles.width = `${input.offsetWidth}px`;
+    inputStyles.height = `${input.offsetHeight}px`;
   }
+
+  // generate random id which can also be used as class name
+  const inputStyleClassName = `simple-input-${Math.random().toString(36).substring(2, 15)}`;
+
+  // create a style class in document of the input styles object
+  const style = document.createElement("style");
+  style.textContent = `.${inputStyleClassName} {
+    ${Object.entries(inputStyles)
+      .map(([key, value]) => `${key}: ${value} !important;`)
+      .join("\n")}
+  }`;
+  document.head.appendChild(style);
+  input.classList.add(inputStyleClassName);
 
   const wrapper = document.createElement("div");
   wrapper.classList.add("simple-wrapper");
@@ -94,15 +106,11 @@ function addSimpleIcon(input: HTMLInputElement) {
     position: relative;
     display: inherit;
     width: 100%;
-    margin: ${margins.top} ${margins.right} ${margins.bottom} ${margins.left};
+    margin: ${computedStyle.marginTop} ${computedStyle.marginRight} ${computedStyle.marginBottom} ${computedStyle.marginLeft};
   `;
-
-  // Remove margins from input
-  input.style.margin = "0";
 
   input.parentNode?.insertBefore(wrapper, input);
   wrapper.appendChild(input);
-  input.style.paddingRight = "40px";
 
   const icon = document.createElement("div");
   icon.innerHTML = PAY_WITH_SIMPLE_SVG;
@@ -148,12 +156,10 @@ function removeSimpleIcon(input: HTMLInputElement) {
       wrapper.parentNode?.insertBefore(input, wrapper);
       // Remove the wrapper (which also removes the icon)
       wrapper.remove();
+      // Remove the style class from the input
+      input.className = input.className.replace(/simple-input-\w+/, "");
     }, 500);
   }
-
-  // Reset the input styles
-  input.style.paddingRight = "";
-  input.dataset.simpleIconAdded = "false";
 }
 
 // Helper function to validate email and open popup
@@ -224,7 +230,7 @@ function applySimple(apply: boolean) {
     ) as NodeListOf<HTMLInputElement>;
 
   emailInputs.forEach((input) => {
-    if (input.dataset.simpleIconAdded === apply.toString()) return;
+    if (input.className.includes("simple-input") === apply) return;
 
     if (apply) addSimpleIcon(input);
     else removeSimpleIcon(input);
