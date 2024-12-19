@@ -201,6 +201,11 @@ const publishPackage = async (packageName: string, newVersion: string) => {
     console.log(colors.cyan("Preparing files for publishing..."));
     updatePackageJson(rootPath, distPath, packageName, newVersion);
     updateReadmeUrls(rootPath, distPath, packageName, newVersion);
+    // copy types
+    fs.copyFileSync(
+      path.join(rootPath, "types", "globals.d.ts"),
+      path.join(distPath, "index.d.ts"),
+    );
 
     console.log(
       colors.yellow(`Building ${packageName} with version ${newVersion}...`),

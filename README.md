@@ -62,4 +62,4 @@ The SDK accepts the following configuration parameters:
 
 ## License
 
-[To be determined]
+This project is licensed under the GPL V3 License - see the [LICENSE](LICENCE) file for details.
