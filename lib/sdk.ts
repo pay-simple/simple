@@ -67,7 +67,7 @@ function openPaymentPopup() {
 function addSimpleIcon(input: HTMLInputElement) {
   console.debug("Injecting Simple icon");
 
-  // Get computed margins from input
+  // Get computed styles from input
   const computedStyle = window.getComputedStyle(input);
   const margins = {
     top: computedStyle.marginTop,
@@ -75,6 +75,18 @@ function addSimpleIcon(input: HTMLInputElement) {
     bottom: computedStyle.marginBottom,
     left: computedStyle.marginLeft,
   };
+
+  // Check and set box-sizing to border-box if not already set
+  if (computedStyle.boxSizing !== "border-box") {
+    const originalWidth = input.offsetWidth;
+    const originalHeight = input.offsetHeight;
+
+    input.style.boxSizing = "border-box";
+
+    // Compensate for the change in box-sizing
+    input.style.width = `${originalWidth}px`;
+    input.style.height = `${originalHeight}px`;
+  }
 
   const wrapper = document.createElement("div");
   wrapper.classList.add("simple-wrapper");
