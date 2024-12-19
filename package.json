@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"bun run build --watch\" \"bun run serve\"",
+    "serve-sdk": "concurrently \"bun run build --watch\" \"serve dist/index.js --single\"",
     "build": "bun build index.ts --target=browser --outfile=dist/index.js",
     "serve": "bun run --hot serve.ts",
     "fmt": "prettier --write . --cache",
