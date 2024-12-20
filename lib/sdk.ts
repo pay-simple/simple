@@ -82,9 +82,11 @@ function addSimpleIcon(input: HTMLInputElement) {
   if (computedStyle.boxSizing !== "border-box") {
     inputStyles["box-sizing"] = "border-box";
 
+    const rect = input.getBoundingClientRect();
+
     // Compensate for the change in box-sizing
-    inputStyles.width = `${input.offsetWidth}px`;
-    inputStyles.height = `${input.offsetHeight}px`;
+    inputStyles.width = `${rect.width}px`;
+    inputStyles.height = `${rect.height}px`;
   }
 
   // generate random id which can also be used as class name
