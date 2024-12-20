@@ -55,18 +55,29 @@ function getLatestVersion(packageName: PackageName) {
  */
 const runPrompts = async (): Promise<
   prompts.Answers<
+    | "publishType"
     | "environment"
     | "versionType"
     | "customVersion"
     | "verifyVersion"
-    | "confirmPublish"
     | "typesVersionType"
     | "typesCustomVersion"
     | "typesVerifyVersion"
+    | "confirmPublish"
   >
 > => {
   const responses = await prompts(
     [
+      {
+        type: "select",
+        name: "publishType",
+        message: "What would you like to publish?",
+        choices: [
+          { title: "Both SDK and Types", value: "both" },
+          { title: "SDK Only", value: "sdk" },
+          { title: "Types Only", value: "types" },
+        ],
+      },
       {
         type: "select",
         name: "environment",
@@ -83,26 +94,31 @@ const runPrompts = async (): Promise<
         ],
       },
       {
-        type: "select",
+        type: (_, values) =>
+          ["sdk", "both"].includes(values.publishType) ? "select" : null,
         name: "versionType",
-        message: "Select the type of version release:",
+        message: "Select the type of version release for SDK:",
         choices: [
-          { title: "Major", value: "major" },
-          { title: "Minor", value: "minor" },
           { title: "Patch", value: "patch" },
+          { title: "Minor", value: "minor" },
+          { title: "Major", value: "major" },
           { title: "Define version yourself", value: "custom" },
         ],
       },
       {
-        type: (prev) => (prev === "custom" ? "text" : null),
+        type: (prev, values) =>
+          prev === "custom" && ["sdk", "both"].includes(values.publishType)
+            ? "text"
+            : null,
         name: "customVersion",
-        message: "Enter the custom version:",
+        message: "Enter the custom version for SDK:",
         initial: (_, { environment }) => getLatestVersion(environment) ?? "",
       },
       {
-        type: "text",
+        type: (_, values) =>
+          ["sdk", "both"].includes(values.publishType) ? "text" : null,
         name: "verifyVersion",
-        message: "Enter the version to verify:",
+        message: "Enter the version to verify for SDK:",
         initial: (_, values) => {
           if (values.versionType === "custom") {
             return values.customVersion;
@@ -121,18 +137,22 @@ const runPrompts = async (): Promise<
         },
       },
       {
-        type: "select",
+        type: (_, values) =>
+          ["types", "both"].includes(values.publishType) ? "select" : null,
         name: "typesVersionType",
         message: "Select the type of version release for types:",
         choices: [
-          { title: "Major", value: "major" },
-          { title: "Minor", value: "minor" },
           { title: "Patch", value: "patch" },
+          { title: "Minor", value: "minor" },
+          { title: "Major", value: "major" },
           { title: "Define version yourself", value: "custom" },
         ],
       },
       {
-        type: (prev) => (prev === "custom" ? "text" : null),
+        type: (prev, values) =>
+          prev === "custom" && ["types", "both"].includes(values.publishType)
+            ? "text"
+            : null,
         name: "typesCustomVersion",
         message: "Enter the custom version for types:",
         initial: (_, { environment }) => {
@@ -144,7 +164,8 @@ const runPrompts = async (): Promise<
         },
       },
       {
-        type: "text",
+        type: (_, values) =>
+          ["types", "both"].includes(values.publishType) ? "text" : null,
         name: "typesVerifyVersion",
         message: "Enter the version to verify for types:",
         initial: (_, values) => {
@@ -171,8 +192,13 @@ const runPrompts = async (): Promise<
       {
         type: "confirm",
         name: "confirmPublish",
-        message: "Are you sure you want to publish both the package and types?",
-        initial: true,
+        message: (_, values) => {
+          if (values.publishType === "both") {
+            return "Are you sure you want to publish both the package and types?";
+          }
+          return `Are you sure you want to publish the ${values.publishType}?`;
+        },
+        initial: false,
       },
     ],
     {
@@ -273,81 +299,73 @@ const updateReadmeUrls = (
  */
 const publishPackage = async (
   packageName: PackageName,
-  newVersion: string,
-  newTypesVersion: string,
+  newVersion: string | undefined,
+  newTypesVersion: string | undefined,
+  publishType: "sdk" | "types" | "both",
 ) => {
+  const isProduction = packageName === "@paysimple/simple";
+  process.env.NODE_ENV = isProduction ? "production" : "development";
+
   const rootPath = path.resolve(__dirname, "..");
   const distPath = path.resolve(
     __dirname,
     "../dist",
-    packageName.includes("dev") ? "dev" : "prod",
+    isProduction ? "prod" : "dev",
   );
   const typesDistPath = path.resolve(
     __dirname,
     "../dist",
-    packageName.includes("dev") ? "dev-types" : "types",
+    isProduction ? "types" : "dev-types",
   );
 
   try {
-    ensureDistPathExists(distPath);
-    ensureDistPathExists(typesDistPath);
-    console.log(colors.cyan("Preparing files for publishing..."));
-
-    // Update and copy package.json
-    updatePackageJson(rootPath, distPath, packageName, newVersion);
-    updatePackageJson(
-      rootPath,
-      typesDistPath,
-      packageName.includes("dev")
-        ? "@paysimple/simple-dev-types"
-        : "@paysimple/simple-types",
-      newTypesVersion,
-    );
-
-    // Update and copy README.md
-    updateReadmeUrls(rootPath, distPath, packageName, newVersion);
-
-    // Copy README.md to dist and types dist
-    fs.copyFileSync(
-      path.join(rootPath, "README.npm.md"),
-      path.join(distPath, "README.md"),
-    );
-    fs.copyFileSync(
-      path.join(rootPath, "README.npm.md"),
-      path.join(typesDistPath, "README.md"),
-    );
-
-    console.log(
-      colors.yellow(
-        `\nBuilding ${packageName} with version ${newVersion}...\n`,
-      ),
-    );
-
-    // Ensure the build step is active
-    await execPromise(`bun run build`);
-
-    // Check if index.js exists before copying
-    const indexPath = path.join(rootPath, "dist", "index.js");
-    if (fs.existsSync(indexPath)) {
-      fs.copyFileSync(indexPath, path.join(distPath, "index.js"));
-    } else {
-      throw new Error(`index.js not found at ${indexPath}`);
+    if (["sdk", "both"].includes(publishType)) {
+      ensureDistPathExists(distPath);
+      updatePackageJson(rootPath, distPath, packageName, newVersion!);
+      updateReadmeUrls(rootPath, distPath, packageName, newVersion!);
     }
 
-    // Check if globals.d.ts exists before copying
-    const typesPath = path.join(rootPath, "types", "globals.d.ts");
-    if (fs.existsSync(typesPath)) {
-      fs.copyFileSync(typesPath, path.join(distPath, "index.d.ts"));
-      fs.copyFileSync(typesPath, path.join(typesDistPath, "index.d.ts"));
-    } else {
-      throw new Error(`globals.d.ts not found at ${typesPath}`);
+    if (["types", "both"].includes(publishType)) {
+      ensureDistPathExists(typesDistPath);
+      updatePackageJson(
+        rootPath,
+        typesDistPath,
+        isProduction
+          ? "@paysimple/simple-types"
+          : "@paysimple/simple-dev-types",
+        newTypesVersion!,
+      );
+      updateReadmeUrls(rootPath, typesDistPath, packageName, newTypesVersion!);
     }
 
-    // Check if we're publishing to production
-    const isProduction = packageName === "@paysimple/simple";
+    // Build only if publishing SDK
+    if (["sdk", "both"].includes(publishType)) {
+      console.log(
+        colors.yellow(
+          `\nBuilding ${packageName} with version ${newVersion}...\n`,
+        ),
+      );
+      await execPromise(`bun run build`);
 
-    if (isProduction) {
-      process.env.NODE_ENV = "production";
+      const indexPath = path.join(rootPath, "dist", "index.js");
+      if (fs.existsSync(indexPath)) {
+        fs.copyFileSync(indexPath, path.join(distPath, "index.js"));
+      } else {
+        throw new Error(`index.js not found at ${indexPath}`);
+      }
+    }
+
+    // Copy types if publishing types or both
+    if (["types", "both"].includes(publishType)) {
+      const typesPath = path.join(rootPath, "types", "globals.d.ts");
+      if (fs.existsSync(typesPath)) {
+        if (publishType === "both") {
+          fs.copyFileSync(typesPath, path.join(distPath, "index.d.ts"));
+        }
+        fs.copyFileSync(typesPath, path.join(typesDistPath, "index.d.ts"));
+      } else {
+        throw new Error(`globals.d.ts not found at ${typesPath}`);
+      }
     }
 
     if (isProduction) {
@@ -358,49 +376,61 @@ const publishPackage = async (
       console.log("3. Confirm the README CDN URLs are correct");
       console.log("\nThen run manually:");
 
-      console.log(
-        colors.cyan("Run the following command to publish the main package:"),
-      );
-      console.log(
-        colors.green(`npm publish ${distPath} --access public --tag latest`),
-      );
+      if (["sdk", "both"].includes(publishType)) {
+        console.log(
+          colors.cyan(
+            "\nRun the following command to publish the main package:",
+          ),
+        );
+        console.log(
+          colors.green(`npm publish ${distPath} --access public --tag latest`),
+        );
+      }
 
-      console.log(
-        colors.cyan(
-          "\nRun the following command to publish the types package:",
-        ),
-      );
-      console.log(
-        colors.green(
-          `npm publish ${typesDistPath} --access public --tag latest`,
-        ),
-      );
+      if (["types", "both"].includes(publishType)) {
+        console.log(
+          colors.cyan(
+            "\nRun the following command to publish the types package:",
+          ),
+        );
+        console.log(
+          colors.green(
+            `npm publish ${typesDistPath} --access public --tag latest`,
+          ),
+        );
+      }
     } else {
-      console.log(
-        colors.yellow(
-          `Publishing to ${packageName} with version ${newVersion}...`,
-        ),
-      );
-      await execPromise(`npm publish ${distPath} --access public --tag latest`);
-      console.log(
-        colors.green(
-          `Successfully published ${packageName} with version ${newVersion}!\n`,
-        ),
-      );
+      if (["sdk", "both"].includes(publishType)) {
+        console.log(
+          colors.yellow(
+            `Publishing to ${packageName} with version ${newVersion}...`,
+          ),
+        );
+        await execPromise(
+          `npm publish ${distPath} --access public --tag latest`,
+        );
+        console.log(
+          colors.green(
+            `Successfully published ${packageName} with version ${newVersion}!\n`,
+          ),
+        );
+      }
 
-      console.log(
-        colors.yellow(
-          `Publishing types to ${packageName} with version ${newTypesVersion}...`,
-        ),
-      );
-      await execPromise(
-        `npm publish ${typesDistPath} --access public --tag latest`,
-      );
-      console.log(
-        colors.green(
-          `Successfully published types for ${packageName} with version ${newTypesVersion}!\n`,
-        ),
-      );
+      if (["types", "both"].includes(publishType)) {
+        console.log(
+          colors.yellow(
+            `Publishing types to ${packageName} with version ${newTypesVersion}...`,
+          ),
+        );
+        await execPromise(
+          `npm publish ${typesDistPath} --access public --tag latest`,
+        );
+        console.log(
+          colors.green(
+            `Successfully published types for ${packageName} with version ${newTypesVersion}!\n`,
+          ),
+        );
+      }
     }
   } catch (error) {
     console.error(colors.red(`Failed to publish: ${parseErrorMessage(error)}`));
@@ -439,15 +469,23 @@ const init = async () => {
   console.log(colors.cyan("\nRunning prompts...\n"));
 
   try {
-    const { environment, verifyVersion, typesVerifyVersion, confirmPublish } =
-      await runPrompts();
+    const {
+      environment,
+      verifyVersion,
+      typesVerifyVersion,
+      confirmPublish,
+      publishType,
+    } = await runPrompts();
 
-    // Handle main package publishing
     if (confirmPublish) {
-      console.log(colors.cyan("Publishing main package..."));
-      await publishPackage(environment, verifyVersion, typesVerifyVersion);
+      await publishPackage(
+        environment,
+        verifyVersion,
+        typesVerifyVersion,
+        publishType,
+      );
     } else {
-      console.log(colors.red("Main package publish cancelled"));
+      console.log(colors.red("Publishing cancelled"));
     }
   } catch (error) {
     console.error(colors.red(`Failed to publish: ${parseErrorMessage(error)}`));

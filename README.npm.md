@@ -62,15 +62,13 @@ import "@paysimple/simple-dev";
 
 ### Using Types
 
-When you install the package via npm, TypeScript types are automatically included once you import the package in your application.
+For the CDN, the TypeScript types can be installed via:
 
-However, if you are using the CDN and want to import just the types separately, you can do so by importing the type definitions directly:
-
-```typescript
-import "@paysimple/simple-dev/index.d.ts";
+```sh npm2yarn
+npm install @paysimple/simple-dev-types
 ```
 
-This will allow you to leverage TypeScript's type-checking capabilities for better development experience.
+If you are using the npm package, the TypeScript types are included automatically.
 
 ## Usage
 
