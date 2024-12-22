@@ -4,16 +4,36 @@ A lightweight JavaScript SDK that adds Simple payment functionality to your web 
 
 ## Usage
 
-1. Initialize the SDK with your `Platform ID` and `Organization Tax ID`:
+Get started with Simple SDK in just 3 steps:
 
-```ts
-setupSimpleAccount("your-platform-id", "your-organization-tax-id");
+```html
+<!-- 1. Include the Simple script -->
+<script src="https://cdn.jsdelivr.net/npm/@paysimple/simple-dev"></script>
+
+<!-- 2. Add an email input -->
+<input type="email" placeholder="Enter email" />
+
+<!-- 3. Configure Simple -->
+<script>
+  window.applySimpleConfig({
+    platformId: "your_platform_id",
+    organizationTaxId: "your_organization_tax_id",
+    amount: 10.99,
+    onSuccess: (response) => console.log("Payment successful!", response),
+  });
+</script>
 ```
 
 2. The SDK will automatically:
    - Detect all email input fields on your page
    - Add a Simple payment button next to each email field
    - Handle payment flows through a popup window
+
+## 📚 Want to unlock Simple's full potential?
+
+> **[Explore our comprehensive documentation →](https://paysimple.io/docs)**
+>
+> Discover advanced features, best practices, and integration examples to make the most of Simple SDK!
 
 ## Development
 

@@ -1,4 +1,4 @@
-# [Simple SDK](https://github.com/pay-simple/simple)
+# Simple SDK
 
 [Simple SDK](https://github.com/pay-simple/simple) is a lightweight JavaScript library designed to simplify payment integration for web applications. It provides a seamless way to handle payment configurations and interactions through a simple API.
 
@@ -158,6 +158,15 @@ window.applySimpleConfig({
 });
 ```
 
+> [!Note]
+> For monthly installments:
+>
+> - The `amount` represents the monthly payment (not the total amount)
+> - Set `intervalType: "month"` and `intervalCount: 1`
+> - Set `totalPayments` to specify the number of installments
+>
+> Example: For a $1200 purchase paid over 12 months, use `amount: 100` and `totalPayments: 12`
+
 ### Schedule Options
 
 | Option        | Type   | Required | Description                                        |
@@ -230,6 +239,10 @@ To view debug logs:
 3. Enable "Verbose" log level
 4. Look for logs prefixed with "Simple"
 
+## Live Example
+
+See example [here](https://github.com/pay-simple/simple/blob/master/example/index.html).
+
 ## Support
 
-For support, please contact support@paysimple.io or visit our [documentation](http://app.paysimple.io/api/docs).
+For support, please contact luzy@paysimple.io.
