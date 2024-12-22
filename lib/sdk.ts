@@ -136,7 +136,7 @@ function addSimpleIcon(input: HTMLInputElement) {
 
   icon.addEventListener("click", openPaymentPopup);
   input.addEventListener(
-    "change",
+    "input",
     () => window.applySimpleConfig({ email: input.value }),
     { signal: state.abortControllers.emailListener.signal },
   );

@@ -119,7 +119,7 @@ You can update any configuration field dynamically by calling `applySimpleConfig
 ```typescript
 // Example: Update amount based on user selection
 const amountInput = document.querySelector("#amount");
-amountInput.addEventListener("change", (e) =>
+amountInput.addEventListener("input", (e) =>
   window.applySimpleConfig({ amount: e.target.value }),
 );
 ```

@@ -150,15 +150,15 @@
       organizationTaxIdInput.value = localStorage.simpleOrganizationTaxId || "";
 
       // Save configuration to localStorage
-      platformIdInput.addEventListener("change", () => {
+      platformIdInput.addEventListener("input", () => {
         localStorage.simplePlatformId = platformIdInput.value;
       });
-      organizationTaxIdInput.addEventListener("change", () => {
+      organizationTaxIdInput.addEventListener("input", () => {
         localStorage.simpleOrganizationTaxId = organizationTaxIdInput.value;
       });
 
       // Toggle recurring payment options
-      enableRecurring.addEventListener("change", () => {
+      enableRecurring.addEventListener("input", () => {
         if (enableRecurring.checked) {
           recurringOptions.style.display = "flex";
         } else {
@@ -179,21 +179,21 @@
       });
 
       // update the config when the platformId changes
-      platformIdInput.addEventListener("change", () => {
+      platformIdInput.addEventListener("input", () => {
         window.applySimpleConfig({
           platformId: platformIdInput.value,
         });
       });
 
       // update the config when the organizationTaxId changes
-      organizationTaxIdInput.addEventListener("change", () => {
+      organizationTaxIdInput.addEventListener("input", () => {
         window.applySimpleConfig({
           organizationTaxId: organizationTaxIdInput.value,
         });
       });
 
       // Update config when form values change
-      form.addEventListener("change", () => {
+      form.addEventListener("input", () => {
         window.applySimpleConfig({
           amount: amountInput.value,
           schedule: enableRecurring.checked
