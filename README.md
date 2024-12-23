@@ -4,16 +4,36 @@ A lightweight JavaScript SDK that adds Simple payment functionality to your web 
 
 ## Usage
 
-1. Initialize the SDK with your platform and organization IDs:
+Get started with Simple SDK in just 3 steps:
 
-```ts
-setupSimpleAccount("your-platform-id", "your-organization-id");
+```html
+<!-- 1. Include the Simple script -->
+<script src="https://cdn.jsdelivr.net/npm/@paysimple/simple-dev"></script>
+
+<!-- 2. Add an email input -->
+<input type="email" placeholder="Enter email" />
+
+<!-- 3. Configure Simple -->
+<script>
+  window.applySimpleConfig({
+    platformId: "your_platform_id",
+    organizationTaxId: "your_organization_tax_id",
+    amount: 10.99,
+    onSuccess: (response) => console.log("Payment successful!", response),
+  });
+</script>
 ```
 
 2. The SDK will automatically:
    - Detect all email input fields on your page
    - Add a Simple payment button next to each email field
    - Handle payment flows through a popup window
+
+## 📚 Want to unlock Simple's full potential?
+
+> **[Explore our comprehensive documentation →](https://paysimple.io/docs)**
+>
+> Discover advanced features, best practices, and integration examples to make the most of Simple SDK!
 
 ## Development
 
@@ -47,10 +67,10 @@ bun serve
 
 The SDK accepts the following configuration parameters:
 
-| Parameter      | Type   | Description                 |
-| -------------- | ------ | --------------------------- |
-| platformId     | string | Your Simple platform ID     |
-| organizationId | string | Your Simple organization ID |
+| Parameter         | Type   | Description                     |
+| ----------------- | ------ | ------------------------------- |
+| platformId        | string | Your Simple platform ID         |
+| organizationTaxId | string | Your Simple organization tax ID |
 
 ## Contributing
 
@@ -62,4 +82,4 @@ The SDK accepts the following configuration parameters:
 
 ## License
 
-[To be determined]
+This project is licensed under the GPL V3 License - see the [LICENSE](LICENCE) file for details.
