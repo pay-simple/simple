@@ -31,7 +31,7 @@ Get started with Simple SDK in just 3 steps:
 
 ## 📚 Want to unlock Simple's full potential?
 
-> **[Explore our comprehensive documentation →](https://paysimple.io/docs)**
+> **[Explore our comprehensive documentation →](https://docs.paysimple.io)**
 >
 > Discover advanced features, best practices, and integration examples to make the most of Simple SDK!
 

@@ -194,7 +194,7 @@ The icon will automatically:
 
 ## Response Schema
 
-The `onSuccess` callback receives a response object with the following structure:
+The `onSuccess` callback receives a JWT (JSON Web Token) that contains an encoded payload with the following structure when decoded:
 
 ```typescript
 interface PaymentResponse {
@@ -227,6 +227,43 @@ interface PaymentResponse {
   };
 
   gatewayResponse: Record<string, any>; // Raw gateway response
+
+  iat: number; // (jwt issued at)
+  exp: number; // (jwt expiration)
+}
+```
+
+> [!Important]
+> For secure payment processing, always verify:
+>
+> - JWT signature using [Simple's public key](https://docs.paysimple.io/jwt.key.pub)
+> - platformId matches your platform ID
+> - Confirm the transaction ID is not duplicate to prevent duplicate transactions.
+
+> [!Note]
+> The JWT expiration (exp) is set to 10 minutes.
+
+### Verifying the JWT
+
+To ensure the authenticity of the payment response, you should verify the JWT using Simple's public key:
+
+1. Download the public key from [docs.paysimple.io/jwt.key.pub](https://docs.paysimple.io/jwt.key.pub)
+2. Use a JWT library to verify the token. Here's an example using Node.js:
+
+```javascript
+const jwt = require("jsonwebtoken");
+const fs = require("fs");
+
+const publicKey = fs.readFileSync("jwt.key.pub");
+
+function verifyPaymentResponse(token) {
+  try {
+    const decoded = jwt.verify(token, publicKey, { algorithms: ["RS256"] });
+    return decoded;
+  } catch (error) {
+    console.error("Invalid token:", error);
+    return null;
+  }
 }
 ```
 
