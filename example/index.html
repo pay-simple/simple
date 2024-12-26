@@ -157,15 +157,6 @@
         localStorage.simpleOrganizationTaxId = organizationTaxIdInput.value;
       });
 
-      // Toggle recurring payment options
-      enableRecurring.addEventListener("input", () => {
-        if (enableRecurring.checked) {
-          recurringOptions.style.display = "flex";
-        } else {
-          recurringOptions.style.display = "none";
-        }
-      });
-
       // initialize the config
       window.applySimpleConfig({
         platformId: platformIdInput.value,
@@ -178,23 +169,10 @@
           ))
       });
 
-      // update the config when the platformId changes
-      platformIdInput.addEventListener("input", () => {
+      function updateConfig() {
         window.applySimpleConfig({
           platformId: platformIdInput.value,
-        });
-      });
-
-      // update the config when the organizationTaxId changes
-      organizationTaxIdInput.addEventListener("input", () => {
-        window.applySimpleConfig({
           organizationTaxId: organizationTaxIdInput.value,
-        });
-      });
-
-      // Update config when form values change
-      form.addEventListener("input", () => {
-        window.applySimpleConfig({
           amount: amountInput.value,
           schedule: enableRecurring.checked
             ? {
@@ -209,7 +187,26 @@
               }
             : undefined,
         });
+      }
+
+      // Toggle recurring payment options
+      enableRecurring.addEventListener("input", () => {
+        if (enableRecurring.checked) {
+          recurringOptions.style.display = "flex";
+        } else {
+          recurringOptions.style.display = "none";
+        }
+        updateConfig();
       });
+
+      // update the config when the platformId changes
+      platformIdInput.addEventListener("input", updateConfig);
+
+      // update the config when the organizationTaxId changes
+      organizationTaxIdInput.addEventListener("input", updateConfig);
+
+      // Update config when form values change
+      form.addEventListener("input", updateConfig);
     </script>
 
     <style>
