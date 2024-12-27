@@ -423,7 +423,7 @@ describe("SDK", () => {
 
       // Verify all config parameters are in the URL
       const urlArg = (window.open as Mock<typeof window.open>).mock
-        .calls[0][0] as string;
+        .lastCall?.[0] as string;
       expect(urlArg).toContain(`platformId=${config.platformId}`);
       expect(urlArg).toContain(`organizationTaxId=${config.organizationTaxId}`);
       expect(urlArg).toContain(`amount=${config.amount}`);
@@ -458,7 +458,7 @@ describe("SDK", () => {
       );
 
       const urlArg = decodeURIComponent(
-        (window.open as Mock<typeof window.open>).mock.calls[0][0] as string,
+        (window.open as Mock<typeof window.open>).mock.lastCall?.[0] as string,
       );
       // Verify subscription parameters
       const schedule = config.schedule;
@@ -492,7 +492,7 @@ describe("SDK", () => {
       await waitForNextTick();
 
       const urlArg = decodeURIComponent(
-        (window.open as Mock<typeof window.open>).mock.calls[0][0] as string,
+        (window.open as Mock<typeof window.open>).mock.lastCall?.[0] as string,
       );
       // Verify required parameters are present
       expect(urlArg).toContain(`platformId=${config.platformId}`);
@@ -526,13 +526,99 @@ describe("SDK", () => {
       icon?.dispatchEvent(new Event("click"));
       await waitForNextTick();
 
-      const mockCalls = (window.open as Mock<typeof window.open>).mock.calls;
-      const urlArg = mockCalls[0][0] as string;
+      const urlArg = (window.open as Mock<typeof window.open>).mock
+        .lastCall?.[0] as string;
+      expect(urlArg).toBeString();
       // Verify email is properly encoded
       expect(urlArg).toContain(
         `email=${encodeURIComponent(config.email || "")}`,
       );
       expect(urlArg).toContain("test%2Bspecial%40example.com");
+    });
+  });
+
+  describe("Response Handling", () => {
+    test("should call onSuccess callback with response data when receiving success message", async () => {
+      const mockOnSuccess = mock(() => {});
+      const config: Partial<SimpleConfig> = {
+        platformId: "507f1f77bcf86cd799439011",
+        organizationTaxId: "12345678901",
+        amount: "100",
+        onSuccess: mockOnSuccess,
+      };
+
+      await window.applySimpleConfig(config);
+      await waitForNextTick();
+
+      // Simulate a success message from the payment popup
+      const responseData = {
+        id: "123",
+        amount: 10000,
+        platformId: config.platformId,
+        organizationTaxId: config.organizationTaxId,
+        name: "Test User",
+        gatewayTransactionId: "gw_123",
+        createdAt: new Date().toISOString(),
+      };
+
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: { type: "success", data: responseData },
+          origin: BASE_URL,
+        }),
+      );
+
+      await waitForNextTick();
+      expect(mockOnSuccess).toHaveBeenCalledWith(responseData);
+      expect(mockOnSuccess).toHaveBeenCalledTimes(1);
+    });
+
+    test("should not call onSuccess callback for messages from different origin", async () => {
+      const mockOnSuccess = mock(() => {});
+      const config: Partial<SimpleConfig> = {
+        platformId: "507f1f77bcf86cd799439011",
+        organizationTaxId: "12345678901",
+        amount: "100",
+        onSuccess: mockOnSuccess,
+      };
+
+      await window.applySimpleConfig(config);
+      await waitForNextTick();
+
+      // Simulate a message from a different origin
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: { type: "success", data: {} },
+          origin: "https://malicious-site.com",
+        }),
+      );
+
+      await waitForNextTick();
+      expect(mockOnSuccess).not.toHaveBeenCalled();
+    });
+
+    test("should not call onSuccess callback for non-success message types", async () => {
+      const mockOnSuccess = mock(() => {});
+      const config: Partial<SimpleConfig> = {
+        platformId: "507f1f77bcf86cd799439011",
+        organizationTaxId: "12345678901",
+        amount: "100",
+        onSuccess: mockOnSuccess,
+      };
+
+      await window.applySimpleConfig(config);
+      await waitForNextTick();
+
+      // Simulate a non-success message
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          data: { type: "error", data: {} },
+          origin: BASE_URL,
+        }),
+      );
+
+      await waitForNextTick();
+      expect(mockOnSuccess).not.toHaveBeenCalled();
     });
   });
 
