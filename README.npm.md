@@ -124,6 +124,8 @@ amountInput.addEventListener("input", (e) =>
 );
 ```
 
+Calling `applySimpleConfig()` without arguments will clear all configurations and remove all Simple icons from the page.
+
 ### Configuration Options
 
 | Option            | Type     | Required | Description                             |
@@ -251,15 +253,14 @@ To ensure the authenticity of the payment response, you should verify the JWT us
 2. Use a JWT library to verify the token. Here's an example using Node.js:
 
 ```javascript
-const jwt = require("jsonwebtoken");
-const fs = require("fs");
+import fs from "fs";
+import jwt from "jsonwebtoken";
 
 const publicKey = fs.readFileSync("jwt.key.pub");
 
 function verifyPaymentResponse(token) {
   try {
-    const decoded = jwt.verify(token, publicKey, { algorithms: ["RS256"] });
-    return decoded;
+    return jwt.verify(token, publicKey, { algorithms: ["RS256"] });
   } catch (error) {
     console.error("Invalid token:", error);
     return null;

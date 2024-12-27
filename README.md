@@ -51,6 +51,14 @@ bun i
 
 2. Available scripts:
 
+- Developing the SDK:
+
+```bash
+bun run dev
+```
+
+This serves the example page and watches for changes in the SDK with hot reloading.
+
 - Build the SDK (with watch mode):
 
 ```bash
@@ -61,6 +69,12 @@ bun run build
 
 ```bash
 bun serve
+```
+
+- Run tests:
+
+```bash
+bun test
 ```
 
 ## Configuration
@@ -76,9 +90,10 @@ The SDK accepts the following configuration parameters:
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Run tests (`bun test`)
+4. Commit your changes (`git commit -m 'Add some amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request
 
 ## License
 
