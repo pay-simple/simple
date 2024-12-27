@@ -21,7 +21,7 @@ const state = {
 // Event listener for postMessage
 window.addEventListener("message", (event: MessageEvent) => {
   if (event.origin === BASE_URL && event.data.type === "success") {
-    state.config.onSuccess?.(event.data);
+    state.config.onSuccess?.(event.data.data);
   }
 });
 
