@@ -22,7 +22,7 @@ export async function validateConfig(
     errors.push("Invalid organizationTaxId!");
   }
 
-  if (!config.amount || isNaN(Number(config.amount))) {
+  if (!config.amount || Number(config.amount) <= 0) {
     errors.push("Invalid amount!");
   }
 
@@ -60,12 +60,9 @@ export async function validateConfig(
       errors.push("Invalid schedule!, Expected 'endDate' to be a valid date!");
     }
 
-    if (
-      config.schedule.totalPayments &&
-      isNaN(Number(config.schedule.totalPayments))
-    ) {
+    if (config.schedule.totalPayments && config.schedule.totalPayments < 1) {
       errors.push(
-        "Invalid schedule!, Expected 'totalPayments' to be a number!",
+        "Invalid schedule!, Expected 'totalPayments' to be greater than 0!",
       );
     }
 
@@ -100,7 +97,7 @@ export async function validateConfig(
   }
   if (errors.length > 0) {
     debugTimeout = window.setTimeout(() => {
-      console.error("Simple config validation errors:", errors);
+      console.debug("Simple config validation errors:", errors);
     }, 500);
   }
 

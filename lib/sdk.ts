@@ -146,7 +146,7 @@ function addSimpleIcon(input: HTMLInputElement) {
 }
 
 function removeSimpleIcon(input: HTMLInputElement) {
-  console.info("Removing Simple icon");
+  console.debug("Removing Simple icon");
   const wrapper = input.parentElement;
   if (wrapper?.classList.contains("simple-wrapper")) {
     const icon: HTMLDivElement | null = wrapper.querySelector("div:last-child");
@@ -219,8 +219,6 @@ function applySimple(apply: boolean) {
   state.abortControllers.emailCheck.renew();
   if (apply) state.autoOpenTimeout = setTimeout(checkEmailAndOpenPopup, 1000);
   else state.abortControllers.emailListener.renew();
-
-  // Auto open popup if email is valid
 
   // Find and process all email inputs
   let emailInputs = document.querySelectorAll(
