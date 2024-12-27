@@ -32,7 +32,18 @@ type FormData = {
 async function fillForm(
   page: Page,
   { platformId, organizationTaxId, amount, email, schedule }: FormData,
+  testApiValidation: boolean = false,
 ) {
+  const validationResponsePromise = page
+    .waitForResponse(/.*\/api\/popup\/verify-ids.*/, {
+      timeout: 20000,
+    })
+    .catch(() => {
+      if (testApiValidation) {
+        throw new Error("Validation request timed out after 10 seconds");
+      }
+    });
+
   await page.fill("#platformId", platformId);
   await page.fill("#organizationTaxId", organizationTaxId);
   await page.fill("#amount", amount);
@@ -50,17 +61,9 @@ async function fillForm(
     if (schedule.totalPayments)
       await page.fill("#totalPayments", schedule.totalPayments.toString());
   }
-}
 
-async function testSimpleBubbleInjected(page: Page, shouldBeVisible: boolean) {
-  const simpleBubble = page.locator('div[title="Pay with Simple"]');
-  if (shouldBeVisible) {
-    await expect(simpleBubble).toBeVisible();
-    // Check if the SVG is a child of the Simple bubble
-    const svg = simpleBubble.locator("svg");
-    await expect(svg).toBeVisible();
-  } else {
-    await expect(simpleBubble).not.toBeVisible();
+  if (testApiValidation) {
+    await validationResponsePromise;
   }
 }
 
@@ -85,13 +88,37 @@ test.describe("Simple bubble injects properly", async () => {
   // Build the SDK before each test
   test.beforeEach(() => execPromise("bun run build"));
 
+  async function testSimpleBubbleInjected(
+    page: Page,
+    shouldBeVisible: boolean,
+  ) {
+    const simpleBubble = page.locator('div[title="Pay with Simple"]');
+
+    if (shouldBeVisible) {
+      // Wait for the bubble to be removed if test failed,
+      // as it takes a second when removing with transition
+      await page.waitForTimeout(1500);
+
+      await expect(simpleBubble).toBeVisible();
+      // Check if the SVG is a child of the Simple bubble
+      const svg = simpleBubble.locator("svg");
+      await expect(svg).toBeVisible();
+    } else {
+      await expect(simpleBubble).not.toBeVisible();
+    }
+  }
+
   test("Should inject Simple bubble", async ({ page }) => {
     await page.goto("http://localhost:8000");
-    await fillForm(page, {
-      platformId,
-      organizationTaxId,
-      amount: "100",
-    });
+    await fillForm(
+      page,
+      {
+        platformId,
+        organizationTaxId,
+        amount: "100",
+      },
+      true,
+    );
 
     await testSimpleBubbleInjected(page, true);
   });
@@ -100,12 +127,16 @@ test.describe("Simple bubble injects properly", async () => {
     page,
   }) => {
     await page.goto("http://localhost:8000");
-    await fillForm(page, {
-      platformId,
-      organizationTaxId,
-      amount: "100",
-      email: "invalid",
-    });
+    await fillForm(
+      page,
+      {
+        platformId,
+        organizationTaxId,
+        amount: "100",
+        email: "invalid",
+      },
+      true,
+    );
 
     await testSimpleBubbleInjected(page, true);
   });
@@ -128,45 +159,78 @@ test.describe("Simple bubble injects properly", async () => {
     page,
   }) => {
     await page.goto("http://localhost:8000");
-    await fillForm(page, {
-      platformId,
-      organizationTaxId: "invalid",
-      amount: "100",
-      email: "test@example.com",
-    });
+    await fillForm(
+      page,
+      {
+        platformId,
+        organizationTaxId: "invalid",
+        amount: "100",
+        email: "test@example.com",
+      },
+      true,
+    );
 
     await testSimpleBubbleInjected(page, false);
   });
 
   test("Should not inject Simple bubble / invalid amount", async ({ page }) => {
     await page.goto("http://localhost:8000");
-    await fillForm(page, {
-      platformId,
-      organizationTaxId,
-      amount: "-100",
-      email: "test@example.com",
-    });
+    await fillForm(
+      page,
+      {
+        platformId,
+        organizationTaxId,
+        amount: "-100",
+        email: "test@example.com",
+      },
+      false,
+    );
 
     await testSimpleBubbleInjected(page, false);
   });
 
-  test("Should inject Simple bubble, w/ schedule", async ({ page }) => {
+  test("Should inject Simple bubble / with schedule", async ({ page }) => {
     await page.goto("http://localhost:8000");
-    await fillForm(page, {
-      platformId,
-      organizationTaxId,
-      amount: "100",
-      email: "test@example.com",
-      schedule: {
-        intervalType: "month",
-        intervalCount: 3,
-        startDate: "2024-01-01",
-        endDate: "2024-12-31",
-        totalPayments: 12,
+    await fillForm(
+      page,
+      {
+        platformId,
+        organizationTaxId,
+        amount: "100",
+        email: "test@example.com",
+        schedule: {
+          intervalType: "month",
+          intervalCount: 3,
+        },
       },
-    });
+      true,
+    );
 
     await testSimpleBubbleInjected(page, true);
+  });
+
+  test("Should not inject Simple bubble / with end date and total payments", async ({
+    page,
+  }) => {
+    await page.goto("http://localhost:8000");
+    await fillForm(
+      page,
+      {
+        platformId,
+        organizationTaxId,
+        amount: "100",
+        email: "test@example.com",
+        schedule: {
+          intervalType: "month",
+          intervalCount: 3,
+          endDate: "2024-12-31",
+          totalPayments: 12,
+        },
+      },
+      true,
+    );
+
+    await testSimpleBubbleInjected(page, false);
   });
 
   test("Should not inject Simple bubble / invalid interval type", async ({
