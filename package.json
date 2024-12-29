@@ -1,10 +1,12 @@
 {
   "name": "simple",
-  "module": "index.ts",
+  "version": "1.0.0",
+  "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "bun run build --watch",
-    "build": "bun build index.ts --target=browser --outfile=dist/index.js --minify",
+    "dev": "concurrently \"bun run build --watch\" \"bun run serve\"",
+    "serve-sdk": "concurrently \"bun run build --watch\" \"serve dist/index.js --single\"",
+    "build": "bun build index.ts --target=browser --outfile=dist/index.js",
     "serve": "bun run --hot serve.ts",
     "fmt": "prettier --write . --cache",
     "fmt:check": "prettier --check . --cache",
@@ -12,25 +14,45 @@
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
     "cleani": "rm -rf dist node_modules && bun i",
-    "prepare": "husky"
+    "prepare": "husky",
+    "publish": "bun run scripts/publish-cli.ts"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
     "@eslint/js": "^9.16.0",
+    "@happy-dom/global-registrator": "^16.0.0",
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
     "@types/bun": "latest",
     "@types/eslint": "^9.6.1",
+    "@types/prompts": "^2.4.9",
+    "@types/semver": "^7.5.8",
+    "bun-types": "^1.1.42",
+    "concurrently": "^9.1.0",
     "eslint": "^9.16.0",
     "globals": "^15.13.0",
     "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
+    "picocolors": "^1.1.1",
     "prettier": "^3.4.1",
+    "prompts": "^2.4.2",
+    "semver": "^7.6.3",
     "typescript-eslint": "^8.17.0"
   },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
+  "prettier": {
+    "plugins": [
+      "@ianvs/prettier-plugin-sort-imports"
+    ],
+    "importOrder": [
+      "<THIRD_PARTY_MODULES>",
+      "",
+      "<TYPES>",
+      "<TYPES>^[@~]/(?!$).*$",
+      "",
+      "^[@~]/.*$",
+      "^[.]"
+    ]
   },
-  "prettier": {},
   "lint-staged": {
     "*.{ts,tsx,md,mdx}": [
       "prettier --write --cache"
@@ -43,5 +65,20 @@
     "extends": [
       "@commitlint/config-conventional"
     ]
-  }
+  },
+  "files": [
+    "index.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pay-simple/simple.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pay-simple/simple/issues"
+  },
+  "homepage": "https://github.com/pay-simple/simple.git",
+  "keywords": [
+    "payment",
+    "simple"
+  ]
 }

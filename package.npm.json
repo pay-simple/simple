@@ -1,0 +1,16 @@
+{
+  "name": "simple",
+  "version": "0.0.1",
+  "main": "index.js",
+  "type": "module",
+  "files": ["index.js", "index.d.ts"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pay-simple/simple.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pay-simple/simple/issues"
+  },
+  "homepage": "https://github.com/pay-simple/simple.git",
+  "keywords": ["payment", "simple"]
+}
