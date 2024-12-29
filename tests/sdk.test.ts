@@ -26,7 +26,6 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 function createEmailInput() {
   const input = document.createElement("input");
   input.type = "email";
-  input.className = "simple-email";
   document.body.appendChild(input);
   return input;
 }
@@ -161,6 +160,108 @@ describe("SDK", () => {
       expect(input.parentElement?.classList.contains("simple-wrapper")).toBe(
         false,
       );
+    });
+
+    describe("Email Input Detection", () => {
+      test("should detect input with simple-email class directly", async () => {
+        const input = document.createElement("input");
+        input.type = "text"; // Not email type
+        input.className = "simple-email another-custom-class-name";
+        document.body.appendChild(input);
+
+        await window.applySimpleConfig({
+          platformId: "507f1f77bcf86cd799439011",
+          organizationTaxId: "12345678901",
+          amount: "100",
+        });
+        await waitForNextTick();
+
+        expect(input.parentElement?.classList.contains("simple-wrapper")).toBe(
+          true,
+        );
+      });
+
+      test("should detect input when parent has simple-email class", async () => {
+        const parent = document.createElement("div");
+        parent.className = "simple-email another-custom-class-name";
+        const child = document.createElement("div");
+        const grandChild = document.createElement("div");
+        const input = document.createElement("input");
+        input.type = "text"; // Not email type
+        grandChild.appendChild(input);
+        child.appendChild(grandChild);
+        parent.appendChild(child);
+        document.body.appendChild(parent);
+
+        await window.applySimpleConfig({
+          platformId: "507f1f77bcf86cd799439011",
+          organizationTaxId: "12345678901",
+          amount: "100",
+        });
+        await waitForNextTick();
+
+        expect(input.parentElement?.classList.contains("simple-wrapper")).toBe(
+          true,
+        );
+      });
+
+      test("should ignore type=email when simple-email class is present on other elements", async () => {
+        // Create an email input that should be ignored
+        const emailInput = createEmailInput();
+
+        // Create input with simple-email class
+        const classInput = document.createElement("input");
+        classInput.type = "text";
+        classInput.className = "simple-email";
+        document.body.appendChild(classInput);
+
+        await window.applySimpleConfig({
+          platformId: "507f1f77bcf86cd799439011",
+          organizationTaxId: "12345678901",
+          amount: "100",
+        });
+        await waitForNextTick();
+
+        expect(
+          emailInput.parentElement?.classList.contains("simple-wrapper"),
+        ).toBe(false);
+        expect(
+          classInput.parentElement?.classList.contains("simple-wrapper"),
+        ).toBe(true);
+      });
+
+      test("should handle multiple inputs with simple-email class", async () => {
+        // Create multiple inputs with simple-email class
+        const input1 = document.createElement("input");
+        input1.className = "simple-email";
+        document.body.appendChild(input1);
+
+        const parent = document.createElement("div");
+        parent.className = "simple-email";
+        const input2 = document.createElement("input");
+        parent.appendChild(input2);
+        document.body.appendChild(parent);
+
+        const emailInput = createEmailInput(); // Should be ignored due to class-based inputs present
+        document.body.appendChild(emailInput);
+
+        await window.applySimpleConfig({
+          platformId: "507f1f77bcf86cd799439011",
+          organizationTaxId: "12345678901",
+          amount: "100",
+        });
+        await waitForNextTick();
+
+        expect(input1.parentElement?.classList.contains("simple-wrapper")).toBe(
+          true,
+        );
+        expect(input2.parentElement?.classList.contains("simple-wrapper")).toBe(
+          true,
+        );
+        expect(
+          emailInput.parentElement?.classList.contains("simple-wrapper"),
+        ).toBe(false);
+      });
     });
   });
 
