@@ -293,6 +293,79 @@ const updateReadmeUrls = (
 };
 
 /**
+ * Purges the jsDelivr cache for a specific package version or returns the curl command
+ * @param {PackageName} packageName - The name of the package
+ * @param {string} version - The version to purge
+ * @param {boolean} returnCommand - If true, returns the curl command instead of executing it
+ * @returns {Promise<string | void>} - Returns the curl command if returnCommand is true
+ */
+const purgeJsDelivrCache = async (
+  packageName: PackageName,
+  version: string,
+  returnCommand?: boolean,
+) => {
+  const baseVersion = version.replace(/(\d+\.\d+)\.\d+/, "$1");
+  const urls = [
+    `${packageName}@${version}`,
+    `${packageName}@${baseVersion}`,
+    `${packageName}`,
+  ];
+  const urlsToPurge = urls.join(",");
+
+  const curlCommand = `curl -X POST "https://purge.jsdelivr.net/npm/${urlsToPurge}"`;
+
+  if (returnCommand) {
+    console.log(
+      colors.cyan(
+        "\nCDN URLs being purged (can be used at https://www.jsdelivr.com/tools/purge):",
+      ),
+    );
+    urls.forEach((url) => {
+      console.log(colors.yellow(`https://cdn.jsdelivr.net/npm/${url}`));
+    });
+    return curlCommand;
+  }
+
+  console.log(colors.cyan("\nPurging jsDelivr cache..."));
+  console.log(colors.cyan("URLs being purged:"));
+  urls.forEach((url) => {
+    console.log(colors.yellow(`https://cdn.jsdelivr.net/npm/${url}`));
+  });
+  console.log(
+    colors.cyan(
+      "if this fails, try purging manually at https://www.jsdelivr.com/tools/purge",
+    ),
+  );
+
+  try {
+    const response = await fetch(
+      `https://purge.jsdelivr.net/npm/${urlsToPurge}`,
+    );
+    if (response.ok) {
+      console.log(colors.green(`Successfully purged cache for all versions`));
+    } else {
+      console.log(
+        colors.yellow(`Failed to purge cache: ${response.statusText}`),
+      );
+      console.log(
+        colors.yellow(
+          "Please try purging manually at https://www.jsdelivr.com/tools/purge",
+        ),
+      );
+    }
+  } catch (error) {
+    console.log(
+      colors.yellow(`Failed to purge cache: ${parseErrorMessage(error)}`),
+    );
+    console.log(
+      colors.yellow(
+        "Please try purging manually at https://www.jsdelivr.com/tools/purge",
+      ),
+    );
+  }
+};
+
+/**
  * Prepares and publishes the package to npm.
  * @param {PackageName} packageName - The name of the package to publish.
  * @param {string} newVersion - The version of the package to publish.
@@ -385,6 +458,14 @@ const publishPackage = async (
         console.log(
           colors.green(`npm publish ${distPath} --access public --tag latest`),
         );
+        console.log(
+          colors.cyan("\nAfter publishing, purge the jsDelivr cache with:"),
+        );
+        console.log(
+          colors.green(
+            await purgeJsDelivrCache(packageName, newVersion!, true),
+          ),
+        );
       }
 
       if (["types", "both"].includes(publishType)) {
@@ -396,6 +477,18 @@ const publishPackage = async (
         console.log(
           colors.green(
             `npm publish ${typesDistPath} --access public --tag latest`,
+          ),
+        );
+        console.log(
+          colors.cyan("\nAfter publishing, purge the jsDelivr cache with:"),
+        );
+        console.log(
+          colors.green(
+            await purgeJsDelivrCache(
+              "@paysimple/simple-dev-types",
+              newTypesVersion!,
+              true,
+            ),
           ),
         );
       }
@@ -414,6 +507,7 @@ const publishPackage = async (
             `Successfully published ${packageName} with version ${newVersion}!\n`,
           ),
         );
+        await purgeJsDelivrCache(packageName, newVersion!);
       }
 
       if (["types", "both"].includes(publishType)) {
@@ -429,6 +523,10 @@ const publishPackage = async (
           colors.green(
             `Successfully published types for ${packageName} with version ${newTypesVersion}!\n`,
           ),
+        );
+        await purgeJsDelivrCache(
+          "@paysimple/simple-dev-types",
+          newTypesVersion!,
         );
       }
     }

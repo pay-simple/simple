@@ -141,6 +141,11 @@ function addSimpleIcon(input: HTMLInputElement) {
     { signal: state.abortControllers.emailListener.signal },
   );
 
+  // If email is already filled when injecting the icon,
+  // update the state with its current value in the next tick
+  if (input.value)
+    setTimeout(() => window.applySimpleConfig({ email: input.value }), 0);
+
   input.dataset.simpleIconAdded = "true";
   console.debug("Simple icon added");
 }

@@ -326,6 +326,37 @@ describe("SDK", () => {
       );
     });
 
+    test("should auto-open popup when email is prefilled before other fields are valid", async () => {
+      const input = createEmailInput();
+      input.value = "registered@example.com"; // Using the mock's check for "registered"
+
+      // First apply an invalid config
+      await window.applySimpleConfig({
+        platformId: "invalid-id",
+        organizationTaxId: "",
+        amount: "-100",
+      });
+
+      await sleep(1100);
+      // Should not open popup yet due to invalid config
+      expect(window.open).not.toHaveBeenCalled();
+
+      // Now apply valid config
+      await window.applySimpleConfig({
+        platformId: "507f1f77bcf86cd799439011",
+        organizationTaxId: "12345678901",
+        amount: "100",
+      });
+
+      await sleep(1100);
+      // Should now open popup as config is valid and email is registered
+      expect(window.open).toHaveBeenCalledWith(
+        expect.stringContaining(`${BASE_URL}/payment?`),
+        "PopupWindow",
+        expect.any(String),
+      );
+    });
+
     test("should not auto-open popup for unregistered email", async () => {
       const input = createEmailInput();
       input.value = "new-email@example.com";
