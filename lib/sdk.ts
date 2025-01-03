@@ -108,6 +108,7 @@ function addSimpleIcon(input: HTMLInputElement) {
     position: relative;
     display: inherit;
     width: 100%;
+    height: 100%;
     margin: ${computedStyle.marginTop} ${computedStyle.marginRight} ${computedStyle.marginBottom} ${computedStyle.marginLeft};
   `;
 
