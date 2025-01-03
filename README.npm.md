@@ -204,7 +204,9 @@ interface PaymentResponse {
   amount: number; // Amount in cents
   platformId: string; // Platform identifier
   organizationTaxId: string; // Organization tax ID
-  name: string; // Customer name
+  name?: string; // Customer name
+  phoneNumber: string; // Customer phone number
+  email: string; // Customenr email
   gatewayTransactionId: string; // Payment gateway transaction ID
   createdAt: string; // Transaction timestamp
 
