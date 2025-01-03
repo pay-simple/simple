@@ -75,7 +75,7 @@ function addSimpleIcon(input: HTMLInputElement) {
     // Remove margins from input
     margin: "0px",
     // Add padding to the right of the input to make space for the icon
-    // "padding-right": '40px',
+    "padding-right": "110px",
   };
 
   // Check and set box-sizing to border-box if not already set
