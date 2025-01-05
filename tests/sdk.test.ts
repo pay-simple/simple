@@ -1,5 +1,6 @@
 import {
   afterEach,
+  beforeAll,
   beforeEach,
   describe,
   expect,
@@ -31,6 +32,33 @@ function createEmailInput() {
 }
 
 describe("SDK", () => {
+  beforeAll(() => {
+    // Mock IntersectionObserver
+
+    window.IntersectionObserver = mock(
+      (callback: IntersectionObserverCallback) => ({
+        observe: mock((target: Element) =>
+          // Immediately trigger callback with intersecting true
+          callback(
+            [
+              {
+                isIntersecting: true,
+                target,
+              } as IntersectionObserverEntry,
+            ],
+            {
+              observe: mock(),
+              unobserve: mock(),
+              disconnect: mock(),
+            } as unknown as IntersectionObserver,
+          ),
+        ),
+        unobserve: mock(),
+        disconnect: mock(),
+      }),
+    ) as unknown as typeof window.IntersectionObserver;
+  });
+
   beforeEach(() => {
     // Mock fetch for verify-ids
     const verifyIdsResponse = new Response(JSON.stringify({ error: null }), {
