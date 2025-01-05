@@ -220,6 +220,16 @@ async function checkEmailAndOpenPopup() {
   }
 }
 
+// visibility observer to add the simple icon when the input becomes visible
+const visibilityObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting && entry.target instanceof HTMLInputElement) {
+      addSimpleIcon(entry.target);
+      visibilityObserver.unobserve(entry.target);
+    }
+  });
+});
+
 function applySimple(apply: boolean) {
   clearTimeout(state.autoOpenTimeout);
   state.abortControllers.emailCheck.renew();
@@ -238,7 +248,13 @@ function applySimple(apply: boolean) {
   emailInputs.forEach((input) => {
     if (input.className.includes("simple-input") === apply) return;
 
-    if (apply) addSimpleIcon(input);
-    else removeSimpleIcon(input);
+    if (apply) {
+      // Only apply the simple bubble when the input becomes visible,
+      // to ensure it maintains the correct styling. (this fixed bug on safari)
+      console.debug("Observing input for visibility, to add simple icon");
+      visibilityObserver.observe(input);
+    } else {
+      removeSimpleIcon(input);
+    }
   });
 }
