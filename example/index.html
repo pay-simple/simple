@@ -101,11 +101,11 @@
           <div class="form-field">
             <div>
               <label for="startDate">Start Date</label>
-              <input type="date" id="startDate" />
+              <input type="date" id="startDate" min="" />
             </div>
             <div>
               <label for="endDate">End Date</label>
-              <input type="date" id="endDate" />
+              <input type="date" id="endDate" min="" />
             </div>
           </div>
 
@@ -261,6 +261,35 @@
           })
           .catch((err) => console.error("Failed to copy:", err));
       }
+
+      // Set minimum date for date inputs
+      function setMinDates() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+        const todayString = `${yyyy}-${mm}-${dd}`;
+
+        const startDateInput = document.getElementById("startDate");
+        const endDateInput = document.getElementById("endDate");
+
+        startDateInput.min = todayString;
+        endDateInput.min = todayString;
+      }
+
+      // Call setMinDates when the page loads
+      setMinDates();
+
+      // Add event listener to start date to update end date minimum
+      document.getElementById("startDate").addEventListener("change", (e) => {
+        const endDateInput = document.getElementById("endDate");
+        endDateInput.min = e.target.value;
+
+        // Clear end date if it's before start date
+        if (endDateInput.value && endDateInput.value < e.target.value) {
+          endDateInput.value = "";
+        }
+      });
     </script>
 
     <style>
