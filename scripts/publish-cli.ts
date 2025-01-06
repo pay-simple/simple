@@ -304,11 +304,11 @@ const purgeJsDelivrCache = async (
   version: string,
   returnCommand?: boolean,
 ) => {
-  const baseVersion = version.replace(/(\d+\.\d+)\.\d+/, "$1");
   const urls = [
-    `${packageName}@${version}`,
-    `${packageName}@${baseVersion}`,
-    `${packageName}`,
+    `${packageName}@${version.replace(/(\d+\.\d+)\.\d+/, "$1")}`, // latest patch version
+    `${packageName}@${version.replace(/(\d+)\.\d+\.\d+/, "$1")}`, // latest minor version
+    `${packageName}`, // latest version
+    `${packageName}@latest`, // latest version
   ];
   const urlsToPurge = urls.join(",");
 
