@@ -238,7 +238,23 @@ function applySimple(apply: boolean) {
   emailInputs.forEach((input) => {
     if (input.className.includes("simple-input") === apply) return;
 
-    if (apply) addSimpleIcon(input);
-    else removeSimpleIcon(input);
+    if (apply) {
+      // Only apply the simple bubble when the input becomes visible,
+      // to ensure it maintains the correct styling. (this fixed bug on safari)
+      console.debug("Observing input for visibility, to add simple icon");
+      new IntersectionObserver((entries, observer) =>
+        entries.forEach((entry) => {
+          if (
+            entry.isIntersecting &&
+            entry.target instanceof HTMLInputElement
+          ) {
+            addSimpleIcon(entry.target);
+            observer.unobserve(entry.target);
+          }
+        }),
+      ).observe(input);
+    } else {
+      removeSimpleIcon(input);
+    }
   });
 }
