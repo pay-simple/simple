@@ -21,26 +21,12 @@
         <h2>Configuration</h2>
         <div class="form-field">
           <div>
-            <label for="platformId">
-              Platform ID<span class="required">*</span>
-            </label>
-            <input
-              type="text"
-              id="platformId"
-              placeholder="Enter platform ID"
-              required
-            />
+            <label for="platformId"> Platform ID<span class="required">*</span> </label>
+            <input type="text" id="platformId" placeholder="Enter platform ID" required />
           </div>
           <div>
-            <label for="organizationTaxId">
-              Organization Tax ID<span class="required">*</span>
-            </label>
-            <input
-              type="text"
-              id="organizationTaxId"
-              placeholder="Enter organization tax ID"
-              required
-            />
+            <label for="organizationTaxId"> Organization Tax ID<span class="required">*</span> </label>
+            <input type="text" id="organizationTaxId" placeholder="Enter organization tax ID" required />
           </div>
         </div>
       </div>
@@ -52,13 +38,7 @@
           <label for="amount">Amount<span class="required">*</span></label>
           <div>
             <span>$</span>
-            <input
-              type="number"
-              id="amount"
-              step="0.01"
-              placeholder="0.00"
-              required
-            />
+            <input type="number" id="amount" step="0.01" placeholder="0.00" required />
           </div>
         </div>
 
@@ -73,9 +53,7 @@
           <!-- Frequency and Count -->
           <div class="form-field">
             <div class="select-container">
-              <label for="intervalType">
-                Frequency<span class="required">*</span>
-              </label>
+              <label for="intervalType"> Frequency<span class="required">*</span> </label>
               <select id="intervalType">
                 <option value="">Select frequency</option>
                 <option value="day">Daily</option>
@@ -85,15 +63,8 @@
               </select>
             </div>
             <div>
-              <label for="intervalCount">
-                Count<span class="required">*</span>
-              </label>
-              <input
-                type="number"
-                id="intervalCount"
-                min="1"
-                placeholder="How many times?"
-              />
+              <label for="intervalCount"> Count<span class="required">*</span> </label>
+              <input type="number" id="intervalCount" min="1" placeholder="How many times?" />
             </div>
           </div>
 
@@ -112,24 +83,14 @@
           <!-- Total Payments -->
           <div class="form-item">
             <label for="totalPayments">Total Payments</label>
-            <input
-              type="number"
-              id="totalPayments"
-              placeholder="Total number of payments"
-              min="1"
-            />
+            <input type="number" id="totalPayments" placeholder="Total number of payments" min="1" />
           </div>
         </div>
 
         <!-- Email Field -->
         <div class="form-item">
           <label for="email">Email<span class="required">*</span></label>
-          <input
-            type="email"
-            id="email"
-            placeholder="your@email.com"
-            required
-          />
+          <input type="email" id="email" placeholder="your@email.com" required />
         </div>
       </form>
 
@@ -140,18 +101,9 @@
         <div class="token-row">
           <span class="token-label" id="tokenDisplay"></span>
           <button class="modern-copy" onclick="copyToken()" title="Copy token">
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path
-                d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
-              />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
             </svg>
           </button>
         </div>
@@ -172,8 +124,7 @@
       const form = document.getElementById("paymentForm");
       const amountInput = document.getElementById("amount");
       const platformIdInput = document.getElementById("platformId");
-      const organizationTaxIdInput =
-        document.getElementById("organizationTaxId");
+      const organizationTaxIdInput = document.getElementById("organizationTaxId");
 
       // Load saved configuration from localStorage
       platformIdInput.value = localStorage.simplePlatformId || "";
@@ -198,14 +149,9 @@
           // Decode and display the payload
           try {
             const payload = JSON.parse(atob(token.split(".")[1]));
-            document.getElementById("response").textContent = JSON.stringify(
-              payload,
-              null,
-              2,
-            );
+            document.getElementById("response").textContent = JSON.stringify(payload, null, 2);
           } catch (error) {
-            document.getElementById("response").textContent =
-              "Error decoding token";
+            document.getElementById("response").textContent = "Error decoding token";
           }
         },
       });
@@ -219,8 +165,7 @@
             ? {
                 intervalType: intervalType.value,
                 intervalCount: parseInt(intervalCount.value),
-                startDate:
-                  document.getElementById("startDate").value || undefined,
+                startDate: document.getElementById("startDate").value || undefined,
                 endDate: document.getElementById("endDate").value || undefined,
                 totalPayments: document.getElementById("totalPayments").value
                   ? parseInt(document.getElementById("totalPayments").value)
@@ -249,12 +194,10 @@
       // Update config when form values change
       form.addEventListener("input", updateConfig);
 
-      // Add copy function
+      // Copy function
       function copyToken() {
         const tokenText = document.getElementById("tokenDisplay").textContent;
-        navigator.clipboard
-          .writeText(tokenText)
-          .then(() => {
+        navigator.clipboard.writeText(tokenText).then(() => {
             const button = document.querySelector(".modern-copy");
             button.classList.add("copied");
             setTimeout(() => button.classList.remove("copied"), 2000);
@@ -321,8 +264,8 @@
       html {
         line-height: 1.5;
         -webkit-text-size-adjust: 100%;
-        font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-          "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+          "Noto Color Emoji";
         -webkit-tap-highlight-color: transparent;
       }
 
@@ -336,19 +279,10 @@
       }
 
       /* Typography */
-      h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6,
-      blockquote,
-      dl,
-      dd,
-      hr,
-      figure,
-      p,
-      pre {
+      /* prettier-ignore */
+      h1, h2, h3, h4, h5, h6,
+      blockquote, dl, dd, hr,
+      figure, p, pre {
         margin: 0;
       }
 
@@ -543,12 +477,9 @@
       select:focus {
         outline: none;
         border-color: #e4e4e7;
-        --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0
-          var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-        --tw-ring-shadow: var(--tw-ring-inset) 0 0 0
-          calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-        box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
-          var(--tw-shadow, 0 0 #0000);
+        --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+        --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+        box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
         --tw-ring-opacity: 1;
         --tw-ring-color: rgb(161 161 170 / var(--tw-ring-opacity));
         --tw-ring-offset-width: 2px;
@@ -653,8 +584,7 @@
       .modern-copy.copied {
         color: #059669;
       }
-
-      /* Add these new styles */
+      
       .select-container select {
         text-align: left;
         padding-left: 0.5rem;
