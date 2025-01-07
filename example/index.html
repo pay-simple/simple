@@ -21,22 +21,12 @@
         <h2>Configuration</h2>
         <div class="form-field">
           <div>
-            <label for="platformId">Platform ID<span class="required">*</span></label>
-            <input
-              type="text"
-              id="platformId"
-              placeholder="Enter platform ID"
-              required
-            />
+            <label for="platformId"> Platform ID<span class="required">*</span> </label>
+            <input type="text" id="platformId" placeholder="Enter platform ID" required />
           </div>
           <div>
-            <label for="organizationTaxId">Organization Tax ID<span class="required">*</span></label>
-            <input
-              type="text"
-              id="organizationTaxId"
-              placeholder="Enter organization tax ID"
-              required
-            />
+            <label for="organizationTaxId"> Organization Tax ID<span class="required">*</span> </label>
+            <input type="text" id="organizationTaxId" placeholder="Enter organization tax ID" required />
           </div>
         </div>
       </div>
@@ -48,13 +38,7 @@
           <label for="amount">Amount<span class="required">*</span></label>
           <div>
             <span>$</span>
-            <input
-              type="number"
-              id="amount"
-              step="0.01"
-              placeholder="0.00"
-              required
-            />
+            <input type="number" id="amount" step="0.01" placeholder="0.00" required />
           </div>
         </div>
 
@@ -68,8 +52,8 @@
         <div id="recurringOptions" class="recurring-payment-options">
           <!-- Frequency and Count -->
           <div class="form-field">
-            <div>
-              <label for="intervalType">Frequency<span class="required">*</span></label>
+            <div class="select-container">
+              <label for="intervalType"> Frequency<span class="required">*</span> </label>
               <select id="intervalType">
                 <option value="">Select frequency</option>
                 <option value="day">Daily</option>
@@ -79,13 +63,8 @@
               </select>
             </div>
             <div>
-              <label for="intervalCount">Count<span class="required">*</span></label>
-              <input
-                type="number"
-                id="intervalCount"
-                min="1"
-                placeholder="How many times?"
-              />
+              <label for="intervalCount"> Count<span class="required">*</span> </label>
+              <input type="number" id="intervalCount" min="1" placeholder="How many times?" />
             </div>
           </div>
 
@@ -93,35 +72,25 @@
           <div class="form-field">
             <div>
               <label for="startDate">Start Date</label>
-              <input type="date" id="startDate" />
+              <input type="date" id="startDate" min="" />
             </div>
             <div>
               <label for="endDate">End Date</label>
-              <input type="date" id="endDate" />
+              <input type="date" id="endDate" min="" />
             </div>
           </div>
 
           <!-- Total Payments -->
           <div class="form-item">
             <label for="totalPayments">Total Payments</label>
-            <input
-              type="number"
-              id="totalPayments"
-              placeholder="Total number of payments"
-              min="1"
-            />
+            <input type="number" id="totalPayments" placeholder="Total number of payments" min="1" />
           </div>
         </div>
 
         <!-- Email Field -->
         <div class="form-item">
           <label for="email">Email<span class="required">*</span></label>
-          <input
-            type="email"
-            id="email"
-            placeholder="your@email.com"
-            required
-          />
+          <input type="email" id="email" placeholder="your@email.com" required />
         </div>
       </form>
 
@@ -134,7 +103,7 @@
           <button class="modern-copy" onclick="copyToken()" title="Copy token">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
             </svg>
           </button>
         </div>
@@ -176,15 +145,15 @@
         onSuccess: (token) => {
           // Display the raw token
           document.getElementById("tokenDisplay").textContent = token;
-          
+
           // Decode and display the payload
           try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
+            const payload = JSON.parse(atob(token.split(".")[1]));
             document.getElementById("response").textContent = JSON.stringify(payload, null, 2);
           } catch (error) {
             document.getElementById("response").textContent = "Error decoding token";
           }
-        }
+        },
       });
 
       function updateConfig() {
@@ -196,8 +165,7 @@
             ? {
                 intervalType: intervalType.value,
                 intervalCount: parseInt(intervalCount.value),
-                startDate:
-                  document.getElementById("startDate").value || undefined,
+                startDate: document.getElementById("startDate").value || undefined,
                 endDate: document.getElementById("endDate").value || undefined,
                 totalPayments: document.getElementById("totalPayments").value
                   ? parseInt(document.getElementById("totalPayments").value)
@@ -226,17 +194,45 @@
       // Update config when form values change
       form.addEventListener("input", updateConfig);
 
-      // Add copy function
+      // Copy function
       function copyToken() {
         const tokenText = document.getElementById("tokenDisplay").textContent;
-        navigator.clipboard.writeText(tokenText)
-          .then(() => {
-            const button = document.querySelector('.modern-copy');
-            button.classList.add('copied');
-            setTimeout(() => button.classList.remove('copied'), 2000);
+        navigator.clipboard.writeText(tokenText).then(() => {
+            const button = document.querySelector(".modern-copy");
+            button.classList.add("copied");
+            setTimeout(() => button.classList.remove("copied"), 2000);
           })
-          .catch(err => console.error('Failed to copy:', err));
+          .catch((err) => console.error("Failed to copy:", err));
       }
+
+      // Set minimum date for date inputs
+      function setMinDates() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+        const todayString = `${yyyy}-${mm}-${dd}`;
+
+        const startDateInput = document.getElementById("startDate");
+        const endDateInput = document.getElementById("endDate");
+
+        startDateInput.min = todayString;
+        endDateInput.min = todayString;
+      }
+
+      // Call setMinDates when the page loads
+      setMinDates();
+
+      // Add event listener to start date to update end date minimum
+      document.getElementById("startDate").addEventListener("change", (e) => {
+        const endDateInput = document.getElementById("endDate");
+        endDateInput.min = e.target.value;
+
+        // Clear end date if it's before start date
+        if (endDateInput.value && endDateInput.value < e.target.value) {
+          endDateInput.value = "";
+        }
+      });
     </script>
 
     <style>
@@ -256,7 +252,7 @@
       }
 
       :root {
-        --tw-ring-inset: var(--tw-empty,/*!*/ /*!*/);
+        --tw-ring-inset: var(--tw-empty);
         --tw-ring-offset-width: 0px;
         --tw-ring-offset-color: #fff;
         --tw-ring-color: rgb(59 130 246 / 0.5);
@@ -268,8 +264,8 @@
       html {
         line-height: 1.5;
         -webkit-text-size-adjust: 100%;
-        font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-          "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+          "Noto Color Emoji";
         -webkit-tap-highlight-color: transparent;
       }
 
@@ -283,6 +279,7 @@
       }
 
       /* Typography */
+      /* prettier-ignore */
       h1, h2, h3, h4, h5, h6,
       blockquote, dl, dd, hr,
       figure, p, pre {
@@ -370,7 +367,7 @@
       select {
         width: 100%;
         height: 2.5rem;
-        padding: 0.75rem;
+        padding: 0.5rem;
         font-size: 0.875rem;
         line-height: 1.25rem;
         font-weight: 400;
@@ -586,6 +583,28 @@
 
       .modern-copy.copied {
         color: #059669;
+      }
+      
+      .select-container select {
+        text-align: left;
+        padding-left: 0.5rem;
+      }
+
+      select {
+        text-align-last: left;
+        padding-left: 0.5rem;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+      }
+
+      select::-ms-expand {
+        display: none;
       }
     </style>
   </body>

@@ -51,6 +51,14 @@
       "",
       "^[@~]/.*$",
       "^[.]"
+    ],
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "printWidth": 120
+        }
+      }
     ]
   },
   "lint-staged": {
