@@ -204,7 +204,7 @@ interface PaymentResponse {
   amount: number; // Amount in cents
   platformId: string; // Platform identifier
   organizationTaxId: string; // Organization tax ID
-  name?: string; // Customer name
+  name: string; // Customer name | `Simple Checkout` if not provided
   phoneNumber: string; // Customer phone number
   email: string; // Customenr email
   gatewayTransactionId: string; // Payment gateway transaction ID
