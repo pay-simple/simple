@@ -44,10 +44,13 @@ window.applySimpleConfig = function (config) {
 };
 
 function openPaymentPopup() {
-  const width = 500;
-  const height = 600;
-  const left = (window.screen.width - width) / 2 + window.screenLeft;
-  const top = (window.screen.height - height) / 2;
+  const screenWidth = window.screen.width;
+  const screenHeight = window.screen.height;
+  const width = Math.min(500, screenWidth);
+  const height = Math.min(600, screenHeight);
+  // https://stackoverflow.com/a/23365665
+  const left = (screenWidth - width) / 2 + window.screenLeft;
+  const top = (screenHeight - height) / 2;
 
   const params = {
     platformId: state.config.platformId,
