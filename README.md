@@ -8,7 +8,7 @@ Get started with Simple SDK in just 3 steps:
 
 ```html
 <!-- 1. Include the Simple script -->
-<script src="https://cdn.jsdelivr.net/npm/@paysimple/simple-dev"></script>
+<script src="https://cdn.jsdelivr.net/npm/@paysimple/simple"></script>
 
 <!-- 2. Add an email input -->
 <input type="email" placeholder="Enter email" />
